@@ -270,10 +270,11 @@ func (u *UserRepo) GetUserByAddress(ctx context.Context, address string) (*biz.U
 	}
 
 	return &biz.User{
-		ID:       user.ID,
-		Address:  user.Address,
-		Password: user.Password,
-		IsDelete: user.IsDelete,
+		ID:         user.ID,
+		Address:    user.Address,
+		Password:   user.Password,
+		IsDelete:   user.IsDelete,
+		AmountUsdt: user.AmountUsdt,
 	}, nil
 }
 
@@ -361,7 +362,7 @@ func (u *UserRepo) UpdateUserMyTotalAmountSub(ctx context.Context, userId int64,
 }
 
 // UpdateUserRewardAreaTwo .
-func (u *UserRepo) UpdateUserRewardAreaTwo(ctx context.Context, userId int64, amountUsdt float64, stop bool) (int64, error) {
+func (u *UserRepo) UpdateUserRewardAreaTwo(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool) (int64, error) {
 	var err error
 
 	if stop {
@@ -373,7 +374,7 @@ func (u *UserRepo) UpdateUserRewardAreaTwo(ctx context.Context, userId int64, am
 
 		var rewardStop Reward
 		rewardStop.UserId = userId
-		rewardStop.AmountNew = amountUsdt
+		rewardStop.AmountNew = amountUsdtTotal
 		rewardStop.Type = "out"   // 本次分红的行为类型
 		rewardStop.Reason = "out" // 给我分红的理由
 		err = u.data.DB(ctx).Table("reward").Create(&rewardStop).Error
@@ -995,6 +996,18 @@ func (ur *UserRecommendRepo) GetUserRecommendByCode(ctx context.Context, code st
 	}
 
 	return res, nil
+}
+
+// GetUserRecommendLikeCodeSum .
+func (ur *UserRecommendRepo) GetUserRecommendLikeCodeSum(ctx context.Context, code string) (int64, error) {
+	var total UserBalanceTotal
+	if err := ur.data.db.Where("recommend_code Like ?", code+"%").Table("user_recommend").Select("sum(id) as total").Take(&total).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return 0, errors.NotFound("USER_BALANCE_RECORD_NOT_FOUND", "user balance not found")
+		}
+	}
+
+	return total.Total, nil
 }
 
 // GetUserRecommendLikeCode .
@@ -1645,7 +1658,7 @@ func (ub *UserBalanceRepo) WithdrawUsdt2(ctx context.Context, userId int64, amou
 }
 
 // Exchange .
-func (ub *UserBalanceRepo) Exchange(ctx context.Context, userId int64, amountUsdt float64, amountRawSub float64) error {
+func (ub *UserBalanceRepo) Exchange(ctx context.Context, userId int64, amountUsdt, fee, amountRawSub float64) error {
 	var (
 		err error
 	)
@@ -1654,6 +1667,12 @@ func (ub *UserBalanceRepo) Exchange(ctx context.Context, userId int64, amountUsd
 		Where("user_id=? and balance_usdt_float>=?", userId, amountUsdt).
 		Updates(map[string]interface{}{"balance_usdt_float": gorm.Expr("balance_usdt_float - ?", amountUsdt), "balance_raw_float": gorm.Expr("balance_raw_float + ?", amountRawSub)}); 0 == res.RowsAffected || nil != res.Error {
 		return errors.NotFound("user balance err", "user balance error")
+	}
+
+	res := ub.data.DB(ctx).Table("total").Where("id=?", 1).
+		Updates(map[string]interface{}{"two": gorm.Expr("two + ?", fee)})
+	if res.Error != nil {
+		return errors.New(500, "UPDATE_USER_ERROR", "one信息修改失败")
 	}
 
 	var userBalance UserBalance
@@ -2131,6 +2150,7 @@ func (ub *UserBalanceRepo) GetWithdrawByUserId2(ctx context.Context, userId int6
 			CreatedAt:       withdraw.CreatedAt,
 			AmountNew:       withdraw.AmountNew,
 			RelAmountNew:    withdraw.RelAmountNew,
+			Address:         withdraw.Address,
 		})
 	}
 	return res, nil

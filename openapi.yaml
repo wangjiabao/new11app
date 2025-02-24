@@ -270,7 +270,7 @@ paths:
                 - App
             operationId: App_RecommendList
             parameters:
-                - name: type
+                - name: address
                   in: query
                   schema:
                     type: string
@@ -696,6 +696,13 @@ components:
         RecommendListReply:
             type: object
             properties:
+                totalNum:
+                    type: string
+                totalTeamNum:
+                    type: string
+                totalAmount:
+                    type: number
+                    format: double
                 recommends:
                     type: array
                     items:
@@ -703,9 +710,12 @@ components:
         RecommendListReply_List:
             type: object
             properties:
-                amount:
+                address:
                     type: string
-                status:
+                amount:
+                    type: number
+                    format: double
+                createdAt:
                     type: string
         RecommendRewardListReply:
             type: object
@@ -853,220 +863,183 @@ components:
         UserInfoReply:
             type: object
             properties:
-                biwPrice:
+                one:
                     type: number
                     format: double
-                balanceBiw:
-                    type: string
-                balanceC:
-                    type: string
-                priceC:
+                two:
                     type: number
                     format: double
-                biwDaily:
-                    type: string
-                buyNumTwo:
-                    type: string
-                buyNumThree:
-                    type: string
-                buyNumFour:
-                    type: string
-                buyNumFive:
-                    type: string
-                buyNumOne:
-                    type: string
-                buyNumSix:
-                    type: string
-                sellNumOne:
+                three:
                     type: number
                     format: double
-                sellNumTwo:
+                todayTotal:
                     type: number
                     format: double
-                sellNumThree:
+                listEthTotal:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/UserInfoReply_ListEthRecordTotal'
+                bPrice:
                     type: number
                     format: double
-                sellNumFour:
-                    type: number
-                    format: double
-                sellNumFive:
-                    type: number
-                    format: double
-                sellNumSix:
-                    type: number
-                    format: double
-                dailyRate:
-                    type: number
-                    format: double
-                biwDailySpeed:
-                    type: number
-                    format: double
-                currentAmountBiw:
-                    type: string
-                recommendNum:
-                    type: string
-                time:
-                    type: string
-                balanceUsdt:
-                    type: string
-                count:
-                    type: string
-                inviteUrl:
-                    type: string
-                inviteUserAddress:
-                    type: string
                 exchangeRate:
                     type: number
                     format: double
-                exchangeRateC:
+                balanceRaw:
                     type: number
                     format: double
-                lastLevel:
-                    type: string
-                LocationList:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/UserInfoReply_List'
-                withdrawList:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/UserInfoReply_ListWithdraw'
-                locationReward:
-                    type: string
-                recommendReward:
-                    type: string
-                fourReward:
-                    type: string
-                areaReward:
-                    type: string
-                fourRewardPool:
-                    type: string
-                fourRewardPoolYes:
-                    type: string
-                four:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/UserInfoReply_ListFour'
-                areaMax:
-                    type: string
-                areaMin:
-                    type: string
-                areaAll:
-                    type: string
-                recommendTotal:
-                    type: string
-                locationUsdt:
-                    type: string
-                locationCurrentMaxSub:
-                    type: string
-                locationCurrentSub:
-                    type: string
-                withdrawTotal:
-                    type: string
-                locationUsdtAll:
-                    type: string
-                listReward:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/UserInfoReply_ListReward'
-                listRecommend:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/UserInfoReply_ListRecommend'
-                listExchange:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/UserInfoReply_ListExchange'
+                balanceUsdt:
+                    type: number
+                    format: double
                 listEth:
                     type: array
                     items:
                         $ref: '#/components/schemas/UserInfoReply_ListEthRecord'
-                configOne:
+                listBuy:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/UserInfoReply_ListBuy'
+                listWithdraw:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/UserInfoReply_ListWithdraw'
+                listExchange:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/UserInfoReply_ListExchange'
+                listTo:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/UserInfoReply_ListTo'
+                listStake:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/UserInfoReply_ListStake'
+                listReward:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/UserInfoReply_ListReward'
+                level:
                     type: string
-                configTwo:
+                myAddress:
                     type: string
-                configThree:
+                inviteUserAddress:
                     type: string
-                configFour:
-                    type: string
-                status:
-                    type: string
-                withdrawMin:
-                    type: string
-                buyLimit:
-                    type: string
-                address:
-                    type: string
-                addressBiw:
-                    type: string
-                amountUsdt:
-                    type: string
-                amountBiw:
-                    type: string
-                price:
+                amoutUsdtGet:
                     type: number
                     format: double
-                priceChange:
+                amoutUsdtSubGet:
                     type: number
                     format: double
-        UserInfoReply_List:
+                amoutUsdt:
+                    type: number
+                    format: double
+                rewardOne:
+                    type: number
+                    format: double
+                rewardTwo:
+                    type: number
+                    format: double
+                rewardThree:
+                    type: number
+                    format: double
+                rewardFour:
+                    type: number
+                    format: double
+                rewardFive:
+                    type: number
+                    format: double
+                listOut:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/UserInfoReply_ListOut'
+        UserInfoReply_ListBuy:
             type: object
             properties:
-                current:
-                    type: string
-                currentMaxSubCurrent:
-                    type: string
                 amount:
+                    type: number
+                    format: double
+                createdAt:
                     type: string
         UserInfoReply_ListEthRecord:
             type: object
             properties:
                 amount:
+                    type: number
+                    format: double
+                createdAt:
                     type: string
-                coinType:
+        UserInfoReply_ListEthRecordTotal:
+            type: object
+            properties:
+                amount:
+                    type: number
+                    format: double
+                address:
                     type: string
                 createdAt:
                     type: string
         UserInfoReply_ListExchange:
             type: object
             properties:
-                amount:
+                amountRaw:
+                    type: number
+                    format: double
+                amountRsdt:
+                    type: number
+                    format: double
+                createdAt:
                     type: string
-                usdtAmount:
-                    type: string
-                created:
-                    type: string
-        UserInfoReply_ListFour:
+        UserInfoReply_ListOut:
             type: object
             properties:
                 amount:
+                    type: number
+                    format: double
+                level:
                     type: string
-                reward:
-                    type: string
-                location:
-                    type: string
-        UserInfoReply_ListRecommend:
-            type: object
-            properties:
-                address:
+                amountGet:
+                    type: number
+                    format: double
+                createdAt:
                     type: string
         UserInfoReply_ListReward:
             type: object
             properties:
+                amount:
+                    type: number
+                    format: double
+                rewardType:
+                    type: string
                 createdAt:
                     type: string
-                type:
+        UserInfoReply_ListStake:
+            type: object
+            properties:
+                amount:
+                    type: number
+                    format: double
+                createdAt:
                     type: string
-                reward:
+        UserInfoReply_ListTo:
+            type: object
+            properties:
+                amount:
+                    type: number
+                    format: double
+                toAddress:
                     type: string
-                address:
+                toType:
                     type: string
-                num:
+                createdAt:
                     type: string
         UserInfoReply_ListWithdraw:
             type: object
             properties:
                 amount:
+                    type: number
+                    format: double
+                address:
                     type: string
                 createAt:
                     type: string

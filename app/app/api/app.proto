@@ -298,200 +298,89 @@ message UserInfoRequest {
 }
 
 message UserInfoReply {
-	double biwPrice = 1; // biw价格
-	string balanceBiw = 2; // biw余额
-	string balanceC = 120; // biw余额
-	double priceC = 121; // 价格
-	string biwDaily = 3; // biw24小时产出
-	int64 buyNumTwo = 4; // 可购买数量1
-	int64 buyNumThree = 5; // 可购买数量2
-	int64 buyNumFour = 6; // 可购买数量3
-	int64 buyNumFive = 7; // 可购买数量4
-	int64 buyNumOne = 8; // 可购买数量5
-	int64 buyNumSix = 90;
-	double sellNumOne = 9; // 卖出数量1
-	double sellNumTwo = 10; // 卖出数量2
-	double sellNumThree = 11; // 卖出数量3
-	double sellNumFour = 12; // 卖出数量4
-	double sellNumFive = 13; // 卖出数量5
-	double sellNumSix = 91; // 卖出数量5
-	double daily_rate = 14; // 每日静态收益
-	double biwDailySpeed = 15; // biw产出速率
-	string currentAmountBiw = 16; // 待领取biw收益
-	int64 recommendNum = 17; // 邀请数量
-	int64 time = 18; // 服务器时间
-	string balanceUsdt = 19; // usdt余额
-	int64 count = 20; // 出局次数
-	string inviteUrl = 21; // 邀请链接
-	string inviteUserAddress = 22; // 直推人地址
-	double exchangeRate = 60; // 兑换手续费
-	double exchangeRateC = 123; // 兑换手续费
-	int64 lastLevel = 62;
-	repeated List LocationList = 52; // 购买记录
-	message List {
-		string current = 2; // 收益
-		string currentMaxSubCurrent = 4; // 挖矿
-		string amount = 1; // 节点
-	}
 
-	repeated ListWithdraw withdrawList = 66; // 团队列表
-	message ListWithdraw {
-		string amount = 2; // 提现金额
-		string createAt = 1; // 提现时间
-	}
-
-	string locationReward = 25; // 挖矿收益 ,挖矿
-	string recommendReward = 26; // 分享收益
-	string fourReward = 27; // 前四名收益
-	string areaReward = 28; // 矩阵收益
-	string fourRewardPool = 23; // 每日前四名奖励池数量
-	string fourRewardPoolYes = 24; // 每日前四名奖励池沉淀数量
-	repeated ListFour four = 50; // 每日前四名
-	message ListFour {
-		string amount = 2; // 直推金额
-		string reward = 3; // 奖励
-		string location = 4;
-	}
-
-	int64 areaMax = 30; // 大区业绩
-	int64 areaMin = 31; // 小区业绩
-	int64 areaAll = 32; // 总业绩
-	int64 recommendTotal = 33; // 直推人数
-	string locationUsdt = 34; // 节点
-	string locationCurrentMaxSub = 35; //待领取，待产出
-	string locationCurrentSub = 36; //已产出
-	string withdrawTotal = 37; // 提现
-	string locationUsdtAll = 38; // 认购
-
-	repeated ListReward listReward = 39; // 收益列表，挖矿，分享，前四名
-	message ListReward {
-		string createdAt = 1; // 时间
-		int64 type = 2; // 类型，挖矿收益 type=1,分享 type=2, 前四名type =3,矩阵type=4
-		string reward = 3; // 数量
-		string address = 4;
-		int64 num = 5;
-	}
-
-	repeated ListRecommend listRecommend = 40; // 收益列表，挖矿，分享，前四名
-	message ListRecommend {
-		string address = 1; // 地址
-	}
-
-	repeated ListExchange listExchange = 41; // 收益列表，挖矿，分享，前四名
-	message ListExchange {
-		string amount = 1;
-		string usdtAmount = 3;
-		string created = 2;
-	}
-
-	repeated ListEthRecord listEth = 117; // 购买记录
-	message ListEthRecord {
-		uint64 amount = 1; // 金额
-		string coinType = 3;
+	double one = 11; // 销毁总量
+	double two = 12; // Ai算力总量
+	double three = 13; // 持币生息总量
+	double todayTotal = 18; //今日奖励ai
+	repeated ListEthRecordTotal listEthTotal = 116; // 充值轮播记录
+	message ListEthRecordTotal {
+		double amount = 1; // 金额
+		string address = 3; // 地址
 		string createdAt = 2; // 时间
 	}
 
-	string configOne = 45;
-	string configTwo = 46;
-	string configThree = 47;
-	string configFour = 48;
-	string status = 49;
-	int64 withdrawMin = 54;
-	int64 buyLimit = 55;
-	string address = 111;
-	string addressBiw = 112;
-	uint64 amountUsdt = 113;
-	uint64 amountBiw  = 114;
-	double price = 115; // biw价格
-	double priceChange = 116; // biw价格
-}
+	double bPrice = 1; // raw价格
+	double exchangeRate = 6; // 兑换手续费
+	double balanceRaw = 2; // raw余额
+	double balanceUsdt = 3; // rsdt余额
 
-message UserInfo1Reply {
-	string address = 1; // 地址
-	string recommendRewardTotal = 92; // 直推奖总
-	string LocationTotal = 15; // 代数总奖
-	string balanceUsdt = 5; // 未提现金
-	string withdrawAmount = 30; // 提现金额
-	string amount = 4; // 200回馈奖励模式1
-	string amountB = 12; // 冻结
-	string inviteUrl = 7; // 邀请链接
-	string inviteUserAddress = 17; // 直推人地址
-	int64 recommendNum = 9; // 直推人数
-	// 模式2
-	int64 level = 2; // vip级别
-	string recommendRewardDhbTotal  = 3; // 直推奖总代币
-	string amount2 = 8; // 200回馈奖励模式2
-	string balanceDhb = 6; // 可提代币
-	string rewardWithdraw = 27; // usdt分红
-	string balanceUsdt2 = 35; // 未提现金
-	string withdrawAmount2 = 36; // 提现金额
-	// 统计
-	string totalDeposit = 32; // 总存usdt
-	string withdrawAll = 39; // 提现总金额
-
-	int64 recommendTeamNum = 10; // 团队人数
-	string total = 11; // 总收益
-	string totalHbs = 98; // hbs总收益
-	string account = 22; // 收款账户地址
-
-
-	repeated List LocationList = 52; // 投资列表
-	message List {
-		string created_at = 1;
-		string amount = 2;
-		string amountMax = 4;
-		int64 Num = 5;
+	repeated ListEthRecord listEth = 117; // 充值记录
+	message ListEthRecord {
+		double amount = 1; // 金额
+		string createdAt = 2; // 时间
 	}
 
-	repeated List22 LocationList2 = 49; // 投资列表
-	message List22 {
-		string created_at = 1;
-		string amount = 2;
-		string amountMax = 4;
+	repeated ListBuy listBuy = 118; // 认购记录
+	message ListBuy {
+		double amount = 1; // 金额
+		string createdAt = 2; // 时间
 	}
 
-	repeated List2 locationRewardList = 53; // 团队受益列表
-	message List2 {
-		string created_at = 1;
-		string amount = 2;
+	repeated ListWithdraw listWithdraw = 119; // 提现列表
+	message ListWithdraw {
+		double amount = 2; // 提现金额
+		string address = 3; // 提现地址
+		string createAt = 1; // 提现时间
 	}
 
-
-	repeated List5 recommendRewardList = 56; // 直推受益列表
-	message List5 {
-		string created_at = 1;
-		string amount = 2;
+	repeated ListExchange listExchange = 120; // rsdt兑换raw记录
+	message ListExchange {
+		double amountRaw = 1; // raw金额
+		double amountRsdt = 2; // rsdt金额
+		string createdAt = 3; // 时间
 	}
 
-	repeated List7 teamAddressList = 65; // 团队列表
-	message List7 {
-		string address = 1;
-		string Amount = 2;
-		string Usdt = 3;
-		int64 Vip = 4;
+	repeated ListTo listTo = 130; // 划转记录
+	message ListTo {
+		double amount = 1; // 金额
+		string toAddress = 4; // 目标地址
+		uint64 toType = 2; // 划转类型:1划转
+		string createdAt = 3; // 时间
 	}
 
-	repeated List11 recommendAddressList = 66; // 团队列表
-	message List11 {
-		string address = 1;
-		string Amount = 2;
-		string Usdt = 3;
-		int64 Vip = 4;
+	repeated ListStake listStake = 131; // 质押记录
+	message ListStake {
+		double amount = 1; // 金额
+		string createdAt = 3; // 时间
 	}
 
-	repeated List9 allRewardList = 67;
-	message List9 {
-		string created_at = 1;
-		string amount = 2;
+	repeated ListReward listReward = 121; // 收益记录
+	message ListReward {
+		double amount = 1; // rsdt金额
+		uint64 rewardType = 2; // 收益类型:1静态，2直推,3团队,4平级,5社区,6质押
+		string createdAt = 3; // 时间
 	}
 
-	repeated List13 depositList = 100;
-	message List13 {
-		string created_at = 1;
-		string amount = 2;
-	}
+	uint64 level = 7; // 级别vip
+	string myAddress = 4; // 我的地址
+	string inviteUserAddress = 5; // 我的直推人地址
+	double amoutUsdtGet = 8; // 已产出算力
+	double amoutUsdtSubGet = 9; // 剩余产出算力
+	double amoutUsdt = 31; // 算力数量
+	double rewardOne = 41; // 静态奖金
+	double rewardTwo = 42; // 直推奖
+	double rewardThree = 43; // 团队奖金
+	double rewardFour = 44; // 平级奖金
+	double rewardFive = 45; // 社区奖金
 
-	int64 withdrawRate = 81;
+	repeated ListOut listOut = 135; // 收益记录
+	message ListOut {
+		double amount = 1; // rsdt金额
+		uint64 level = 4; // 倍数
+		double amountGet = 5; // 已产出
+		string createdAt = 3; // 时间
+	}
 }
 
 message RewardListRequest {
@@ -586,14 +475,18 @@ message TranListReply {
 }
 
 message RecommendListRequest {
-	string type = 1;
+	string address = 1;
 }
 
 message RecommendListReply {
+	uint64 totalNum = 2; // 直推人数
+	uint64 totalTeamNum = 3; // 团队总人数
+	double totalAmount = 4; // 团队总业绩
 	repeated List recommends = 1;
 	message List {
-		string amount = 2;
-		string status = 3;
+		string address = 1;
+		double amount = 2;
+		string created_at = 3;
 	}
 }
 

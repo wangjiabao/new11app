@@ -699,6 +699,10 @@ func (a *AppService) SetBalanceReward(ctx context.Context, req *v1.SetBalanceRew
 	})
 }
 
+func (a *AppService) UserRecommend(ctx context.Context, req *v1.RecommendListRequest) (*v1.RecommendListReply, error) {
+	return a.uuc.UserRecommend(ctx, req)
+}
+
 // DeleteBalanceReward .
 func (a *AppService) DeleteBalanceReward(ctx context.Context, req *v1.DeleteBalanceRewardRequest) (*v1.DeleteBalanceRewardReply, error) {
 	// 在上下文 context 中取出 claims 对象

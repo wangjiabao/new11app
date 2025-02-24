@@ -125,6 +125,7 @@ type Withdraw struct {
 	BalanceRecordId int64
 	Status          string
 	Type            string
+	Address         string
 	CreatedAt       time.Time
 }
 
@@ -244,7 +245,7 @@ type UserBalanceRepo interface {
 	GreateWithdraw(ctx context.Context, userId int64, relAmount float64, amount float64, coinType string, address string) (*Withdraw, error)
 	WithdrawUsdt(ctx context.Context, userId int64, amount int64, tmpRecommendUserIdsInt []int64) error
 	WithdrawUsdt2(ctx context.Context, userId int64, amount float64) error
-	Exchange(ctx context.Context, userId int64, amountUsdt float64, amountRawSub float64) error
+	Exchange(ctx context.Context, userId int64, amountUsdt, fee, amountRawSub float64) error
 	Exchange2(ctx context.Context, userId int64, amount int64, amountUsdtSubFee int64, amountUsdt int64, locationId int64) error
 	WithdrawUsdt3(ctx context.Context, userId int64, amount int64) error
 	TranUsdt(ctx context.Context, userId int64, toUserId int64, amount int64, tmpRecommendUserIdsInt []int64, tmpRecommendUserIdsInt2 []int64) error
@@ -288,6 +289,7 @@ type UserRecommendRepo interface {
 	UpdateUserRecommend(ctx context.Context, u *User, recommendUser *UserRecommend) (bool, error)
 	GetUserRecommendByCode(ctx context.Context, code string) ([]*UserRecommend, error)
 	GetUserRecommendLikeCode(ctx context.Context, code string) ([]*UserRecommend, error)
+	GetUserRecommendLikeCodeSum(ctx context.Context, code string) (int64, error)
 	CreateUserRecommendArea(ctx context.Context, u *User, recommendUser *UserRecommend) (bool, error)
 	DeleteOrOriginUserRecommendArea(ctx context.Context, code string, originCode string) (bool, error)
 	GetUserRecommendLowArea(ctx context.Context, code string) ([]*UserRecommendArea, error)
@@ -318,7 +320,7 @@ type UserRepo interface {
 	UpdateUserNewTwoNew(ctx context.Context, userId int64, amountUsdt float64, last uint64, amountRawFloat float64, coinType string) error
 	UpdateUserMyTotalAmount(ctx context.Context, userId int64, amountUsdt float64) error
 	UpdateUserMyTotalAmountSub(ctx context.Context, userId int64, amountUsdt float64) error
-	UpdateUserRewardAreaTwo(ctx context.Context, userId int64, amountUsdt float64, stop bool) (int64, error)
+	UpdateUserRewardAreaTwo(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool) (int64, error)
 	GetUserById(ctx context.Context, Id int64) (*User, error)
 	GetUserByAddresses(ctx context.Context, Addresses ...string) (map[string]*User, error)
 	GetUserByAddress(ctx context.Context, address string) (*User, error)
@@ -359,37 +361,49 @@ func (uuc *UserUseCase) GetExistUserByAddressOrCreate(ctx context.Context, u *Us
 		recommendUser *UserRecommend
 		err           error
 		userId        int64
-		decodeBytes   []byte
+		//decodeBytes   []byte
 	)
 
 	user, err = uuc.repo.GetUserByAddress(ctx, u.Address) // 查询用户
 	if nil == user || nil != err {
 		code := req.SendBody.Code // 查询推荐码 abf00dd52c08a9213f225827bc3fb100 md5 dhbmachinefirst
 		if "abf00dd52c08a9213f225827bc3fb100" != code {
-			decodeBytes, err = base64.StdEncoding.DecodeString(code)
-			code = string(decodeBytes)
-			if 1 >= len(code) {
+			//decodeBytes, err = base64.StdEncoding.DecodeString(code)
+			//code = string(decodeBytes)
+			//if 1 >= len(code) {
+			//	return nil, errors.New(500, "USER_ERROR", "无效的推荐码1")
+			//}
+			//if userId, err = strconv.ParseInt(code[1:], 10, 64); 0 >= userId || nil != err {
+			//	return nil, errors.New(500, "USER_ERROR", "无效的推荐码2")
+			//}
+
+			//var (
+			//	locationNew []*LocationNew
+			//)
+			//locationNew, err = uuc.locationRepo.GetLocationsByUserId(ctx, userId)
+			//if nil != err {
+			//	return nil, errors.New(500, "USER_ERROR", "推荐人未入金")
+			//}
+			//
+			//if 0 == len(locationNew) {
+			//	return nil, errors.New(500, "USER_ERROR", "推荐人未入金")
+			//}
+			var (
+				userRecommend *User
+			)
+
+			userRecommend, err = uuc.repo.GetUserByAddress(ctx, code)
+			if nil == userRecommend || err != nil {
 				return nil, errors.New(500, "USER_ERROR", "无效的推荐码1")
 			}
-			if userId, err = strconv.ParseInt(code[1:], 10, 64); 0 >= userId || nil != err {
-				return nil, errors.New(500, "USER_ERROR", "无效的推荐码2")
-			}
 
-			var (
-				locationNew []*LocationNew
-			)
-			locationNew, err = uuc.locationRepo.GetLocationsByUserId(ctx, userId)
-			if nil != err {
-				return nil, errors.New(500, "USER_ERROR", "推荐人未入金")
-			}
-
-			if 0 == len(locationNew) {
+			if 0 >= userRecommend.AmountUsdt {
 				return nil, errors.New(500, "USER_ERROR", "推荐人未入金")
 			}
 
 			// 查询推荐人的相关信息
 			recommendUser, err = uuc.urRepo.GetUserRecommendByUserId(ctx, userId)
-			if err != nil {
+			if nil == recommendUser || err != nil {
 				return nil, errors.New(500, "USER_ERROR", "无效的推荐码3")
 			}
 		}
@@ -572,44 +586,16 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 		myUser                *User
 		userRecommend         *UserRecommend
 		myCode                string
-		encodeString          string
 		myUserRecommendUserId int64
 		inviteUserAddress     string
 		myRecommendUser       *User
-		//userInfo      *UserInfo
 		configs               []*Config
 		userBalance           *UserBalance
-		myLocations           []*v1.UserInfoReply_List
 		bPrice                float64
-		cPrice                int64
-		bPriceBase            int64
-		buyOne                int64
-		buyTwo                int64
-		buyThree              int64
-		buyFour               int64
-		buyFive               int64
-		buySix                int64
-		areaMin               int64
-		areaMax               int64
-		areaAll               int64
-		locationUsdt          string
-		locationCurrent       string
-		locationCurrentMaxSub string
-		locationBiw           int64
-		total                 int64
-		one                   int64
-		two                   int64
-		three                 int64
-		four                  int64
 		exchangeRate          float64
-		exchangeRateC         int64
-		lastLevel             int64 = -1
-		configThree           string
-		configFour            string
-		status                = "stop"
-		totalYesReward        int64
-		buyLimit              int64
 		withdrawMin           float64
+		withdrawMax           float64
+		users                 []*User
 	)
 
 	// 配置
@@ -617,11 +603,15 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 		"b_price",
 		"exchange_rate",
 		"withdraw_amount_max",
+		"withdraw_amount_min",
 	)
 	if nil != configs {
 		for _, vConfig := range configs {
-			if "withdraw_amount_max" == vConfig.KeyName {
+			if "withdraw_amount_min" == vConfig.KeyName {
 				withdrawMin, _ = strconv.ParseFloat(vConfig.Value, 10)
+			}
+			if "withdraw_amount_max" == vConfig.KeyName {
+				withdrawMax, _ = strconv.ParseFloat(vConfig.Value, 10)
 			}
 			if "b_price" == vConfig.KeyName {
 				bPrice, _ = strconv.ParseFloat(vConfig.Value, 10)
@@ -630,6 +620,16 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 				exchangeRate, _ = strconv.ParseFloat(vConfig.Value, 10)
 			}
 		}
+	}
+
+	users, err = uuc.repo.GetAllUsers(ctx)
+	if nil != err {
+		return nil, err
+	}
+
+	usersMap := make(map[int64]*User, 0)
+	for _, vUsers := range users {
+		usersMap[vUsers.ID] = vUsers
 	}
 
 	myUser, err = uuc.repo.GetUserById(ctx, user.ID)
@@ -654,8 +654,6 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 	}
 
 	myCode = "D" + strconv.FormatInt(myUser.ID, 10)
-	codeByte := []byte(myCode)
-	encodeString = base64.StdEncoding.EncodeToString(codeByte)
 	if "" != userRecommend.RecommendCode {
 		tmpRecommendUserIds := strings.Split(userRecommend.RecommendCode, "D")
 		if 2 <= len(tmpRecommendUserIds) {
@@ -667,44 +665,6 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 		}
 		inviteUserAddress = myRecommendUser.Address
 		myCode = userRecommend.RecommendCode + myCode
-	}
-
-	var (
-		myUserRecommend []*UserRecommend
-		recommendTotal  int64
-	)
-	myUserRecommend, err = uuc.urRepo.GetUserRecommendByCode(ctx, myCode)
-	if nil != err {
-		return nil, err
-	}
-	myRecommendList := make([]*v1.UserInfoReply_ListRecommend, 0)
-	if nil != myUserRecommend {
-		for _, vMyUserRecommend := range myUserRecommend {
-			var (
-				tmpMyRecommendLocations []*LocationNew
-			)
-			tmpMyRecommendLocations, err = uuc.locationRepo.GetLocationsByUserId(ctx, vMyUserRecommend.UserId)
-			if nil != err {
-				return nil, err
-			}
-
-			if 0 < len(tmpMyRecommendLocations) {
-				recommendTotal++
-				var (
-					myAllRecommendUser *User
-				)
-				myAllRecommendUser, err = uuc.repo.GetUserById(ctx, vMyUserRecommend.UserId)
-				if nil != err {
-					return nil, err
-				}
-
-				if nil == myAllRecommendUser {
-					continue
-				}
-
-				myRecommendList = append(myRecommendList, &v1.UserInfoReply_ListRecommend{Address: myAllRecommendUser.Address})
-			}
-		}
 	}
 
 	// 提现
@@ -726,7 +686,8 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 		}
 
 		withdrawList = append(withdrawList, &v1.UserInfoReply_ListWithdraw{
-			Amount:   fmt.Sprintf("%.4f", v.AmountNew),
+			Address:  v.Address,
+			Amount:   v.AmountNew,
 			CreateAt: v.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
 		})
 	}
@@ -991,68 +952,111 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 	}
 
 	return &v1.UserInfoReply{
-		Status:                status,
-		BiwPrice:              float64(bPrice) / float64(bPriceBase),
-		PriceC:                float64(cPrice) / float64(bPriceBase),
-		BalanceC:              fmt.Sprintf("%.2f", float64(userBalance.BalanceC)/float64(100000)) + "ISPAY",
-		Price:                 float64(bPrice) / float64(bPriceBase),
-		ExchangeRate:          float64(exchangeRate) / 1000,
-		ExchangeRateC:         float64(exchangeRateC) / 1000,
-		BalanceBiw:            fmt.Sprintf("%.2f", float64(userBalance.BalanceDhb)/float64(100000)) + "BIW",
-		BalanceUsdt:           fmt.Sprintf("%.2f", float64(userBalance.BalanceUsdt)/float64(100000)),
-		BiwDaily:              "",
-		BuyNumTwo:             count2,
-		BuyNumThree:           count3,
-		BuyNumFour:            count4,
-		BuyNumFive:            count5,
-		BuyNumOne:             count1,
-		BuyNumSix:             count6,
-		SellNumOne:            float64(buyOne-count1) / float64(buyOne) * 100,
-		SellNumTwo:            float64(buyTwo-count2) / float64(buyTwo) * 100,
-		SellNumThree:          float64(buyThree-count3) / float64(buyThree) * 100,
-		SellNumFour:           float64(buyFour-count4) / float64(buyFour) * 100,
-		SellNumFive:           float64(buyFive-count5) / float64(buyFive) * 100,
-		SellNumSix:            float64(buySix-count6) / float64(buySix) * 100,
-		DailyRate:             0,
-		BiwDailySpeed:         0,
-		CurrentAmountBiw:      currentAmountBiw,
-		RecommendNum:          int64(len(myUserRecommend)),
-		Time:                  time.Now().Unix(),
-		LocationList:          myLocations,
-		WithdrawList:          withdrawList,
-		InviteUserAddress:     inviteUserAddress,
-		InviteUrl:             encodeString,
-		Count:                 myUser.Out,
-		LocationReward:        fmt.Sprintf("%.2f", float64(userBalance.LocationTotal)/float64(100000)) + "USDT",
-		RecommendReward:       fmt.Sprintf("%.2f", float64(userBalance.RecommendTotal)/float64(100000)) + "USDT",
-		FourReward:            fmt.Sprintf("%.2f", float64(userBalance.FourTotal)/float64(100000)),
-		AreaReward:            fmt.Sprintf("%.2f", float64(userBalance.AreaTotal)/float64(100000)) + "USDT",
-		FourRewardPool:        fmt.Sprintf("%.2f", float64(rewardLocationYes/100*total)/float64(100000)),
-		FourRewardPoolYes:     fmt.Sprintf("%.2f", float64(yesAmount)/float64(100000)),
-		Four:                  fourList,
-		AreaMax:               areaMax,
-		AreaMin:               areaMin,
-		AreaAll:               areaAll,
-		RecommendTotal:        recommendTotal,
-		LocationUsdt:          locationUsdt,
-		LocationCurrentMaxSub: locationCurrentMaxSub,
-		LocationCurrentSub:    locationCurrent,
-		WithdrawTotal:         "",
-		LocationUsdtAll:       "",
-		ListReward:            listReward,
-		ListRecommend:         myRecommendList,
-		LastLevel:             lastLevel,
-		ConfigFour:            configFour,
-		ConfigOne:             fmt.Sprintf("%.2f", float64(locationBiw)/float64(100000)),
-		ConfigThree:           configThree,
-		ConfigTwo:             fmt.Sprintf("%.2f", float64(totalYesReward)/float64(100000)),
-		WithdrawMin:           withdrawMin,
-		BuyLimit:              buyLimit,
-		AmountBiw:             myUser.AmountBiw,
-		AmountUsdt:            myUser.Amount,
-		Address:               myUser.AddressTwo,
-		AddressBiw:            myUser.AddressThree,
-		ListEth:               listUserEth,
+		One:               0,
+		Two:               0,
+		Three:             0,
+		TodayTotal:        0,
+		ListEthTotal:      nil,
+		BPrice:            0,
+		ExchangeRate:      0,
+		BalanceRaw:        0,
+		BalanceUsdt:       0,
+		ListEth:           nil,
+		ListBuy:           nil,
+		ListWithdraw:      nil,
+		ListExchange:      nil,
+		ListTo:            nil,
+		ListStake:         nil,
+		ListReward:        nil,
+		Level:             0,
+		MyAddress:         "",
+		InviteUserAddress: "",
+		AmoutUsdtGet:      0,
+		AmoutUsdtSubGet:   0,
+		AmoutUsdt:         0,
+		RewardOne:         0,
+		RewardTwo:         0,
+		RewardThree:       0,
+		RewardFour:        0,
+		RewardFive:        0,
+		ListOut:           nil,
+	}, nil
+}
+
+func (uuc *UserUseCase) UserRecommend(ctx context.Context, req *v1.RecommendListRequest) (*v1.RecommendListReply, error) {
+
+	var (
+		userRecommend   *UserRecommend
+		myUserRecommend []*UserRecommend
+		recommendTotal  uint64
+		user            *User
+		err             error
+	)
+
+	user, _ = uuc.repo.GetUserByAddress(ctx, req.Address)
+	if nil == user {
+		return nil, err
+	}
+
+	// 推荐
+	userRecommend, err = uuc.urRepo.GetUserRecommendByUserId(ctx, user.ID)
+	if nil == userRecommend {
+		return nil, err
+	}
+
+	myUserRecommend, err = uuc.urRepo.GetUserRecommendByCode(ctx, userRecommend.RecommendCode+"D"+strconv.FormatInt(user.ID, 10))
+	if nil == myUserRecommend || nil != err {
+		return nil, err
+	}
+
+	var (
+		totalNum int64
+	)
+	totalNum, err = uuc.urRepo.GetUserRecommendLikeCodeSum(ctx, userRecommend.RecommendCode+"D"+strconv.FormatInt(user.ID, 10))
+	if nil != err {
+		return nil, err
+	}
+
+	tmpUserIds := make([]int64, 0)
+	for _, vMyUserRecommend := range myUserRecommend {
+		tmpUserIds = append(tmpUserIds, vMyUserRecommend.UserId)
+	}
+	if 0 >= len(tmpUserIds) {
+		return nil, err
+	}
+
+	var (
+		usersMap map[int64]*User
+	)
+
+	usersMap, err = uuc.repo.GetUserByUserIdsTwo(ctx, tmpUserIds)
+	if nil == usersMap || nil != err {
+		return nil, err
+	}
+
+	if 0 >= len(usersMap) {
+		return nil, err
+	}
+
+	res := make([]*v1.RecommendListReply_List, 0)
+	for _, vMyUserRecommend := range myUserRecommend {
+		if _, ok := usersMap[vMyUserRecommend.UserId]; !ok {
+			continue
+		}
+
+		recommendTotal++
+		res = append(res, &v1.RecommendListReply_List{
+			Address:   usersMap[vMyUserRecommend.UserId].Address,
+			Amount:    usersMap[vMyUserRecommend.UserId].MyTotalAmount,
+			CreatedAt: vMyUserRecommend.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
+		})
+	}
+
+	return &v1.RecommendListReply{
+		TotalNum:     recommendTotal,
+		TotalTeamNum: uint64(totalNum),
+		TotalAmount:  user.MyTotalAmount,
+		Recommends:   res,
 	}, nil
 }
 
@@ -1752,7 +1756,11 @@ func (uuc *UserUseCase) EthUserRecordHandle(ctx context.Context, amount uint64, 
 
 		last := uint64(0)
 		newAmountUsdt := usersMap[v.UserId].AmountUsdt + float64(amount)
-		if 1000 <= newAmountUsdt && newAmountUsdt < 5000 {
+		if 300 <= newAmountUsdt && newAmountUsdt < 500 {
+			last = 5
+		} else if 500 <= newAmountUsdt && newAmountUsdt < 1000 {
+			last = 6
+		} else if 1000 <= newAmountUsdt && newAmountUsdt < 5000 {
 			last = 1
 		} else if 5000 <= newAmountUsdt && newAmountUsdt < 30000 {
 			last = 2
@@ -1914,6 +1922,10 @@ func (uuc *UserUseCase) EthUserRecordHandle(ctx context.Context, amount uint64, 
 					num = 2.6
 				} else if 4 == tmpRecommendUser.Last {
 					num = 3
+				} else if 5 == tmpRecommendUser.Last {
+					num = 1.5
+				} else if 6 == tmpRecommendUser.Last {
+					num = 1.8
 				} else {
 					continue
 				}
@@ -1928,7 +1940,7 @@ func (uuc *UserUseCase) EthUserRecordHandle(ctx context.Context, amount uint64, 
 						code int64
 					)
 
-					code, err = uuc.repo.UpdateUserRewardAreaTwo(ctx, tmpRecommendUser.ID, tmp, stopArea2)
+					code, err = uuc.repo.UpdateUserRewardAreaTwo(ctx, tmpRecommendUser.ID, tmp, tmpRecommendUser.AmountUsdt, stopArea2)
 					if code > 0 && err != nil {
 						fmt.Println("错误分红社区：", err, tmpRecommendUser)
 					}
@@ -2027,7 +2039,8 @@ func (uuc *UserUseCase) Exchange(ctx context.Context, req *v1.ExchangeRequest, u
 	)
 
 	amountRaw = amountFloat / bPrice
-	amountRawSubFee = amountRaw - amountRaw*exchangeRate
+	fee := amountRaw * exchangeRate
+	amountRawSubFee = amountRaw - fee
 	if amountRawSubFee <= 0 {
 		return &v1.ExchangeReply{
 			Status: "fail price",
@@ -2036,7 +2049,7 @@ func (uuc *UserUseCase) Exchange(ctx context.Context, req *v1.ExchangeRequest, u
 
 	if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
 
-		err = uuc.ubRepo.Exchange(ctx, user.ID, amountFloat, amountRawSubFee) // 提现
+		err = uuc.ubRepo.Exchange(ctx, user.ID, amountFloat, fee, amountRawSubFee) // 提现
 		if nil != err {
 			return err
 		}
@@ -2067,12 +2080,12 @@ func (uuc *UserUseCase) Withdraw(ctx context.Context, req *v1.WithdrawRequest, u
 
 	// 配置
 	var (
-		configs      []*Config
-		withdrawMax  float64
-		withdrawRate float64
+		configs     []*Config
+		withdrawMax float64
+		withdrawMin float64
 	)
 	configs, err = uuc.configRepo.GetConfigByKeys(ctx,
-		"withdraw_amount_max", "withdraw_rate",
+		"withdraw_amount_max", "withdraw_amount_min",
 	)
 	if nil != configs {
 		for _, vConfig := range configs {
@@ -2080,8 +2093,8 @@ func (uuc *UserUseCase) Withdraw(ctx context.Context, req *v1.WithdrawRequest, u
 				withdrawMax, _ = strconv.ParseFloat(vConfig.Value, 10)
 			}
 
-			if "withdraw_rate" == vConfig.KeyName {
-				withdrawRate, _ = strconv.ParseFloat(vConfig.Value, 10)
+			if "withdraw_amount_max" == vConfig.KeyName {
+				withdrawMin, _ = strconv.ParseFloat(vConfig.Value, 10)
 			}
 		}
 	}
@@ -2096,13 +2109,13 @@ func (uuc *UserUseCase) Withdraw(ctx context.Context, req *v1.WithdrawRequest, u
 		}, nil
 	}
 
-	if withdrawMax > amountFloat {
+	if withdrawMin > amountFloat {
 		return &v1.WithdrawReply{
-			Status: "fail max",
+			Status: "fail min",
 		}, nil
 	}
 
-	amountFloatSubFee := amountFloat - amountFloat*withdrawRate
+	amountFloatSubFee := amountFloat
 	if 0 >= amountFloat {
 		return &v1.WithdrawReply{
 			Status: "fail price",
