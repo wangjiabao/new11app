@@ -169,50 +169,51 @@ func (a *AppService) UserInfo(ctx context.Context, req *v1.UserInfoRequest) (*v1
 
 // RecommendUpdate recommendUpdate.
 func (a *AppService) RecommendUpdate(ctx context.Context, req *v1.RecommendUpdateRequest) (*v1.RecommendUpdateReply, error) {
-	// 在上下文 context 中取出 claims 对象
-	var userId int64
-	if claims, ok := jwt.FromContext(ctx); ok {
-		c := claims.(jwt2.MapClaims)
-		if c["UserId"] == nil {
-			return nil, errors.New(500, "ERROR_TOKEN", "无效TOKEN")
-		}
-		userId = int64(c["UserId"].(float64))
-	}
-
-	var (
-		user *biz.User
-		err  error
-	)
-	user, err = a.uuc.GetUserByUserId(ctx, userId)
-	if nil != err {
-		return nil, err
-	}
-
-	if 1 == user.IsDelete {
-		return nil, errors.New(500, "AUTHORIZE_ERROR", "用户已删除")
-	}
-
-	//var (
-	//	address string
-	//	res     bool
-	//)
+	return &v1.RecommendUpdateReply{InviteUserAddress: ""}, nil
+	//// 在上下文 context 中取出 claims 对象
+	//var userId int64
+	//if claims, ok := jwt.FromContext(ctx); ok {
+	//	c := claims.(jwt2.MapClaims)
+	//	if c["UserId"] == nil {
+	//		return nil, errors.New(500, "ERROR_TOKEN", "无效TOKEN")
+	//	}
+	//	userId = int64(c["UserId"].(float64))
+	//}
 	//
-	//res, address, err = verifySig2(req.SendBody.Sign, req.SendBody.PublicKey, "login")
-	//if !res || nil != err || 0 >= len(address) || user.Address != address {
+	//var (
+	//	user *biz.User
+	//	err  error
+	//)
+	//user, err = a.uuc.GetUserByUserId(ctx, userId)
+	//if nil != err {
+	//	return nil, err
+	//}
+	//
+	//if 1 == user.IsDelete {
+	//	return nil, errors.New(500, "AUTHORIZE_ERROR", "用户已删除")
+	//}
+	//
+	////var (
+	////	address string
+	////	res     bool
+	////)
+	////
+	////res, address, err = verifySig2(req.SendBody.Sign, req.SendBody.PublicKey, "login")
+	////if !res || nil != err || 0 >= len(address) || user.Address != address {
+	////	return nil, errors.New(500, "AUTHORIZE_ERROR", "地址签名错误")
+	////}
+	//
+	//var (
+	//	res             bool
+	//	addressFromSign string
+	//)
+	//res, addressFromSign = verifySig(req.SendBody.Sign, []byte(user.Address))
+	//if !res || addressFromSign != user.Address {
 	//	return nil, errors.New(500, "AUTHORIZE_ERROR", "地址签名错误")
 	//}
-
-	var (
-		res             bool
-		addressFromSign string
-	)
-	res, addressFromSign = verifySig(req.SendBody.Sign, []byte(user.Address))
-	if !res || addressFromSign != user.Address {
-		return nil, errors.New(500, "AUTHORIZE_ERROR", "地址签名错误")
-	}
-	return a.uuc.UpdateUserRecommend(ctx, &biz.User{
-		ID: userId,
-	}, req)
+	//return a.uuc.UpdateUserRecommend(ctx, &biz.User{
+	//	ID: userId,
+	//}, req)
 }
 
 // RewardList rewardList.

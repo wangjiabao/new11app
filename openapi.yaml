@@ -891,6 +891,12 @@ components:
                 balanceUsdt:
                     type: number
                     format: double
+                withdrawMax:
+                    type: number
+                    format: double
+                withdrawMin:
+                    type: number
+                    format: double
                 listEth:
                     type: array
                     items:

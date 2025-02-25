@@ -201,6 +201,8 @@ type Reward struct {
 	Reason           string
 	ReasonLocationId int64
 	LocationType     string
+	AmountNew        float64
+	AmountNewTwo     float64
 	CreatedAt        time.Time
 }
 
@@ -669,9 +671,8 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 
 	// 提现
 	var (
-		withdraws      []*Withdraw
-		withdrawAmount float64
-		withdrawList   []*v1.UserInfoReply_ListWithdraw
+		withdraws    []*Withdraw
+		withdrawList []*v1.UserInfoReply_ListWithdraw
 	)
 
 	withdraws, err = uuc.ubRepo.GetWithdrawByUserId2(ctx, user.ID)
@@ -682,137 +683,73 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 	withdrawList = make([]*v1.UserInfoReply_ListWithdraw, 0)
 	for _, v := range withdraws {
 		if "RAW" == v.Type {
-			withdrawAmount += v.AmountNew
+			withdrawList = append(withdrawList, &v1.UserInfoReply_ListWithdraw{
+				Address:  v.Address,
+				Amount:   v.AmountNew,
+				CreateAt: v.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
+			})
 		}
-
-		withdrawList = append(withdrawList, &v1.UserInfoReply_ListWithdraw{
-			Address:  v.Address,
-			Amount:   v.AmountNew,
-			CreateAt: v.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
-		})
 	}
+
 	startDate := time.Now().AddDate(0, 0, -1)
 
 	// 分红
 	var (
 		userRewards []*Reward
 	)
+
 	listReward := make([]*v1.UserInfoReply_ListReward, 0)
+	listExchange := make([]*v1.UserInfoReply_ListExchange, 0)
 	userRewards, err = uuc.ubRepo.GetUserRewardByUserId(ctx, myUser.ID)
-	tmpUserIds := make(map[int64]int64, 0)
-	for _, vUserRewards := range userRewards {
-		if 0 >= vUserRewards.TypeRecordId {
-			continue
-		}
-		tmpUserIds[vUserRewards.TypeRecordId] = vUserRewards.TypeRecordId
-	}
-
-	var (
-		addressUsers map[int64]*User
-	)
-	if 0 < len(tmpUserIds) {
-		tmpAddressUserIds := make([]int64, 0)
-		for _, v := range tmpUserIds {
-			tmpAddressUserIds = append(tmpAddressUserIds, v)
-		}
-
-		addressUsers, err = uuc.repo.GetUserByUserIdsTwo(ctx, tmpAddressUserIds)
-	}
-
-	tmpMyLocations := make([]*v1.UserInfoReply_List, 0)
 	if nil != userRewards {
 		for _, vUserReward := range userRewards {
 			if "location" == vUserReward.Reason {
-				if vUserReward.CreatedAt.After(startDate) {
-					totalYesReward += vUserReward.Amount
-				}
+				//if vUserReward.CreatedAt.After(startDate) {
+				//	totalYesReward += vUserReward.Amount
+				//}
 				listReward = append(listReward, &v1.UserInfoReply_ListReward{
-					CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
-					Reward:    fmt.Sprintf("%.4f", float64(vUserReward.Amount)/float64(100000)) + "USDT",
-					Type:      1,
-				})
-			} else if "area" == vUserReward.Reason {
-				if vUserReward.CreatedAt.After(startDate) {
-					totalYesReward += vUserReward.Amount
-				}
-				listReward = append(listReward, &v1.UserInfoReply_ListReward{
-					CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
-					Reward:    fmt.Sprintf("%.4f", float64(vUserReward.Amount)/float64(100000)) + "USDT",
-					Type:      4,
+					CreatedAt:  vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
+					Amount:     vUserReward.AmountNew,
+					RewardType: 1,
 				})
 			} else if "recommend" == vUserReward.Reason {
-				if vUserReward.CreatedAt.After(startDate) {
-					totalYesReward += vUserReward.Amount
-				}
-
-				addressTmp := ""
-				if nil != addressUsers {
-					if _, ok := addressUsers[vUserReward.TypeRecordId]; ok {
-						addressTmp = addressUsers[vUserReward.TypeRecordId].Address
-					}
-				}
 				listReward = append(listReward, &v1.UserInfoReply_ListReward{
-					CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
-					Reward:    fmt.Sprintf("%.4f", float64(vUserReward.Amount)/float64(100000)) + "USDT",
-					Type:      2,
-					Num:       vUserReward.ReasonLocationId,
-					Address:   addressTmp,
+					CreatedAt:  vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
+					Amount:     vUserReward.AmountNew,
+					RewardType: 2,
 				})
-			} else if "recommend_location" == vUserReward.Reason {
-				if vUserReward.CreatedAt.After(startDate) {
-					totalYesReward += vUserReward.Amount
-				}
+			} else if "area" == vUserReward.Reason {
 				listReward = append(listReward, &v1.UserInfoReply_ListReward{
-					CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
-					Reward:    fmt.Sprintf("%.4f", float64(vUserReward.Amount)/float64(100000)),
-					Type:      8,
+					CreatedAt:  vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
+					Amount:     vUserReward.AmountNew,
+					RewardType: 3,
 				})
-			} else if "four" == vUserReward.Reason {
+			} else if "area_three" == vUserReward.Reason {
 				listReward = append(listReward, &v1.UserInfoReply_ListReward{
-					CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
-					Reward:    fmt.Sprintf("%.4f", float64(vUserReward.Amount)/float64(100000)),
-					Type:      3,
+					CreatedAt:  vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
+					Amount:     vUserReward.AmountNew,
+					RewardType: 4,
+				})
+			} else if "area_two" == vUserReward.Reason {
+				listReward = append(listReward, &v1.UserInfoReply_ListReward{
+					CreatedAt:  vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
+					Amount:     vUserReward.AmountNew,
+					RewardType: 5,
 				})
 			} else if "exchange" == vUserReward.Reason {
-				listReward = append(listReward, &v1.UserInfoReply_ListReward{
-					CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
-					Reward:    fmt.Sprintf("%.4f", float64(vUserReward.Amount)/float64(100000)) + "USDT",
-					Type:      5,
-				})
-			} else if "exchange_2" == vUserReward.Reason {
-				listReward = append(listReward, &v1.UserInfoReply_ListReward{
-					CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
-					Reward:    fmt.Sprintf("%.4f", float64(vUserReward.Amount)/float64(100000)) + "USDT",
-					Type:      5,
+				listExchange = append(listExchange, &v1.UserInfoReply_ListExchange{
+					AmountRaw:  vUserReward.AmountNew,
+					AmountRsdt: vUserReward.AmountNewTwo,
+					CreatedAt:  vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
 				})
 			} else if "withdraw" == vUserReward.Reason {
-				listReward = append(listReward, &v1.UserInfoReply_ListReward{
-					CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
-					Reward:    fmt.Sprintf("%.4f", float64(vUserReward.Amount)/float64(100000)),
-					Type:      6,
-				})
+
 			} else if "buy" == vUserReward.Reason {
-				listReward = append(listReward, &v1.UserInfoReply_ListReward{
-					CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
-					Reward:    fmt.Sprintf("%.4f", float64(vUserReward.Amount)),
-					Type:      7,
-				})
-				tmpMyLocations = append(tmpMyLocations, &v1.UserInfoReply_List{
-					Current:              fmt.Sprintf("%.2f", float64(vUserReward.Amount)*2.5),
-					CurrentMaxSubCurrent: "0.00",
-					Amount:               fmt.Sprintf("%.2f", float64(vUserReward.Amount)),
-				})
+
 			} else {
 				continue
 			}
 		}
-	}
-
-	for k, vTmpMyLocations := range tmpMyLocations {
-		if 0 == k {
-			continue
-		}
-		myLocations = append(myLocations, vTmpMyLocations)
 	}
 
 	// 充值
@@ -951,29 +888,48 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 		})
 	}
 
+	num := float64(1)
+	if 1 == myUser.Last {
+		num = 2
+	} else if 2 == myUser.Last {
+		num = 2.3
+	} else if 3 == myUser.Last {
+		num = 2.6
+	} else if 4 == myUser.Last {
+		num = 3
+	} else if 5 == myUser.Last {
+		num = 1.5
+	} else if 6 == myUser.Last {
+		num = 1.8
+	} else {
+		return nil, err
+	}
+
 	return &v1.UserInfoReply{
+		WithdrawMin:       withdrawMin,
+		WithdrawMax:       withdrawMax,
 		One:               0,
 		Two:               0,
 		Three:             0,
 		TodayTotal:        0,
 		ListEthTotal:      nil,
-		BPrice:            0,
-		ExchangeRate:      0,
-		BalanceRaw:        0,
-		BalanceUsdt:       0,
+		BPrice:            bPrice,
+		ExchangeRate:      exchangeRate,
+		BalanceRaw:        userBalance.BalanceRawFloat,
+		BalanceUsdt:       userBalance.BalanceUsdtFloat,
 		ListEth:           nil,
 		ListBuy:           nil,
-		ListWithdraw:      nil,
+		ListWithdraw:      withdrawList,
 		ListExchange:      nil,
 		ListTo:            nil,
 		ListStake:         nil,
 		ListReward:        nil,
 		Level:             0,
-		MyAddress:         "",
-		InviteUserAddress: "",
-		AmoutUsdtGet:      0,
-		AmoutUsdtSubGet:   0,
-		AmoutUsdt:         0,
+		MyAddress:         myUser.Address,
+		InviteUserAddress: inviteUserAddress,
+		AmoutUsdtGet:      myUser.AmountUsdtGet,
+		AmoutUsdtSubGet:   myUser.AmountUsdt*num - myUser.AmountUsdtGet,
+		AmoutUsdt:         myUser.AmountUsdt,
 		RewardOne:         0,
 		RewardTwo:         0,
 		RewardThree:       0,

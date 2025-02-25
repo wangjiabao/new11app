@@ -571,6 +571,7 @@ func (u *UserRepo) GetUserById(ctx context.Context, Id int64) (*biz.User, error)
 		MyTotalAmount:          user.MyTotalAmount,
 		AmountUsdtGet:          user.AmountUsdtGet,
 		AmountRecommendUsdtGet: user.AmountRecommendUsdtGet,
+		Last:                   user.Last,
 	}, nil
 }
 
@@ -2781,6 +2782,8 @@ func (ub *UserBalanceRepo) GetUserRewardByUserId(ctx context.Context, userId int
 			LocationType:     reward.LocationType,
 			CreatedAt:        reward.CreatedAt,
 			AmountB:          reward.AmountB,
+			AmountNew:        reward.AmountNew,
+			AmountNewTwo:     reward.AmountNewTwo,
 		})
 	}
 	return res, nil
