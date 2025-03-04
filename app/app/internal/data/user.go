@@ -362,12 +362,12 @@ func (u *UserRepo) UpdateUserMyTotalAmountSub(ctx context.Context, userId int64,
 }
 
 // UpdateUserRewardAreaTwo .
-func (u *UserRepo) UpdateUserRewardAreaTwo(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool) (int64, error) {
+func (u *UserRepo) UpdateUserRewardAreaTwo(ctx context.Context, userId int64, amountUsdt float64, amountUsdtTotal float64, stop bool, level, i int64, address string) (int64, error) {
 	var err error
 
 	if stop {
 		res := u.data.DB(ctx).Table("user").Where("id=?", userId).
-			Updates(map[string]interface{}{"amount_usdt_get": 0, "amount_usdt": 0, "last": 0, "amount_recommend_usdt_get": 0})
+			Updates(map[string]interface{}{"amount_usdt_get": 0, "amount_usdt": 0, "last": 0, "amount_recommend_usdt_get": 0, "out_rate": gorm.Expr("out_rate + ?", 1)})
 		if res.Error != nil {
 			return 0, errors.New(500, "UPDATE_USER_ERROR", "用户信息修改失败")
 		}
@@ -416,7 +416,9 @@ func (u *UserRepo) UpdateUserRewardAreaTwo(ctx context.Context, userId int64, am
 	var reward Reward
 	reward.UserId = userBalance.UserId
 	reward.AmountNew = amountUsdt
-	reward.BalanceRecordId = userBalanceRecode.ID
+	reward.BalanceRecordId = level
+	reward.ReasonLocationId = i
+	reward.Address = address
 	reward.Type = "system_reward_area_two" // 本次分红的行为类型
 	reward.Reason = "area_two"
 	err = u.data.DB(ctx).Table("reward").Create(&reward).Error
@@ -731,6 +733,7 @@ func (u *UserRepo) GetAllUsers(ctx context.Context) ([]*biz.User, error) {
 			AmountUsdtGet:          item.AmountUsdtGet,
 			MyTotalAmount:          item.MyTotalAmount,
 			AmountRecommendUsdtGet: item.AmountRecommendUsdtGet,
+			Last:                   item.Last,
 		})
 	}
 	return res, nil
