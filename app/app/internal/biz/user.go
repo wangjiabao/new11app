@@ -27,6 +27,7 @@ type User struct {
 	Last                   uint64
 	Amount                 uint64
 	AmountBiw              uint64
+	OutRate                uint64
 	Total                  uint64
 	IsDelete               int64
 	Out                    int64
@@ -356,12 +357,11 @@ func (uuc *UserUseCase) GetDhbConfig(ctx context.Context) ([]*Config, error) {
 	return uuc.configRepo.GetConfigByKeys(ctx, "level1Dhb", "level2Dhb", "level3Dhb")
 }
 
-func (uuc *UserUseCase) GetExistUserByAddressOrCreate(ctx context.Context, u *User, req *v1.EthAuthorizeRequest) (*User, error) {
+func (uuc *UserUseCase) GetExistUserByAddressOrCreate(ctx context.Context, u *User, req *v1.EthAuthorizeRequest) (*User, error, string) {
 	var (
 		user          *User
 		recommendUser *UserRecommend
 		err           error
-		userId        int64
 		//decodeBytes   []byte
 	)
 
@@ -371,9 +371,9 @@ func (uuc *UserUseCase) GetExistUserByAddressOrCreate(ctx context.Context, u *Us
 		if "abf00dd52c08a9213f225827bc3fb100" != code {
 			//decodeBytes, err = base64.StdEncoding.DecodeString(code)
 			//code = string(decodeBytes)
-			//if 1 >= len(code) {
-			//	return nil, errors.New(500, "USER_ERROR", "无效的推荐码1")
-			//}
+			if 1 >= len(code) {
+				return nil, errors.New(500, "USER_ERROR", "无效的推荐码1"), "无效的推荐码"
+			}
 			//if userId, err = strconv.ParseInt(code[1:], 10, 64); 0 >= userId || nil != err {
 			//	return nil, errors.New(500, "USER_ERROR", "无效的推荐码2")
 			//}
@@ -395,17 +395,19 @@ func (uuc *UserUseCase) GetExistUserByAddressOrCreate(ctx context.Context, u *Us
 
 			userRecommend, err = uuc.repo.GetUserByAddress(ctx, code)
 			if nil == userRecommend || err != nil {
-				return nil, errors.New(500, "USER_ERROR", "无效的推荐码1")
+				return nil, errors.New(500, "USER_ERROR", "无效的推荐码1"), "无效的推荐码"
 			}
 
 			if 0 >= userRecommend.AmountUsdt {
-				return nil, errors.New(500, "USER_ERROR", "推荐人未入金")
+				if 0 >= userRecommend.OutRate {
+					return nil, errors.New(500, "USER_ERROR", "推荐人未入金"), "推荐人未入金"
+				}
 			}
 
 			// 查询推荐人的相关信息
-			recommendUser, err = uuc.urRepo.GetUserRecommendByUserId(ctx, userId)
+			recommendUser, err = uuc.urRepo.GetUserRecommendByUserId(ctx, userRecommend.ID)
 			if nil == recommendUser || err != nil {
-				return nil, errors.New(500, "USER_ERROR", "无效的推荐码3")
+				return nil, errors.New(500, "USER_ERROR", "无效的推荐码3"), "无效的推荐码3"
 			}
 		}
 
@@ -416,12 +418,12 @@ func (uuc *UserUseCase) GetExistUserByAddressOrCreate(ctx context.Context, u *Us
 		//)
 		//address, privateKey, err = generateKey()
 		//if 0 >= len(address) || 0 >= len(privateKey) || err != nil {
-		//	return nil, errors.New(500, "USER_ERROR", "生成地址错误")
+		//	return nil, errors.New(500, "USER_ERROR", "生成地址错误"), "生成地址错误"
 		//}
 		//
 		//u.PrivateKey = privateKey
 		//u.AddressTwo = address
-		//
+
 		//var (
 		//	addressThree    string
 		//	privateKeyThree string
@@ -462,11 +464,11 @@ func (uuc *UserUseCase) GetExistUserByAddressOrCreate(ctx context.Context, u *Us
 
 			return nil
 		}); err != nil {
-			return nil, err
+			return nil, err, ""
 		}
 	}
 
-	return user, nil
+	return user, nil, ""
 }
 
 func generateWord() string {
