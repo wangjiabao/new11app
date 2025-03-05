@@ -1715,19 +1715,13 @@ func (uuc *UserUseCase) Buy(ctx context.Context, req *v1.BuyRequest, user *User)
 	}
 
 	amountRaw := bPrice * float64(amount)
-	if 1 == req.SendBody.Type {
-		if amountRaw > userBalance.BalanceRawFloat {
-			return &v1.BuyReply{
-				Status: "raw余额不足",
-			}, nil
-		}
-
-		coinType = "RAW"
-	} else {
+	if amountRaw > userBalance.BalanceRawFloat {
 		return &v1.BuyReply{
-			Status: "类型错误",
+			Status: "raw余额不足",
 		}, nil
 	}
+
+	coinType = "RAW"
 
 	notExistDepositResult := make([]*EthUserRecord, 0)
 	notExistDepositResult = append(notExistDepositResult, &EthUserRecord{ // 两种币的记录
@@ -2107,7 +2101,7 @@ func (uuc *UserUseCase) Exchange(ctx context.Context, req *v1.ExchangeRequest, u
 		}, nil
 	}
 
-	amountFloat, _ := strconv.ParseFloat(req.SendBody.Amount, 10)
+	amountFloat := float64(req.SendBody.Amount)
 
 	if userBalance.BalanceUsdtFloat < amountFloat {
 		return &v1.ExchangeReply{
@@ -2187,7 +2181,7 @@ func (uuc *UserUseCase) Withdraw(ctx context.Context, req *v1.WithdrawRequest, u
 		}, nil
 	}
 
-	amountFloat, _ := strconv.ParseFloat(req.SendBody.Amount, 10)
+	amountFloat := float64(req.SendBody.AmountNew)
 	if userBalance.BalanceRawFloat < amountFloat {
 		return &v1.WithdrawReply{
 			Status: "余额不足",

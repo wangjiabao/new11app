@@ -1161,6 +1161,8 @@ components:
             properties:
                 type:
                     type: string
+                amountNew:
+                    type: string
                 amount:
                     type: string
                 password:

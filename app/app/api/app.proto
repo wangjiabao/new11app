@@ -541,7 +541,7 @@ message RecommendListReply {
 message ExchangeRequest {
 	message SendBody{
 		string sign = 2;
-		string amount = 1;
+		uint64 amount = 1;
 		string publicKey = 5;
 		string type = 3;
 	}
@@ -556,6 +556,7 @@ message ExchangeReply {
 message WithdrawRequest {
 	message SendBody{
 		string type = 2;
+		uint64 amountNew = 7;
 		string amount = 1;
 		string password = 3;
 		string sign = 4;
