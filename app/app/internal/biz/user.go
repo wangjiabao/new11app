@@ -634,6 +634,12 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 		"exchange_rate",
 		"withdraw_amount_max",
 		"withdraw_amount_min",
+		"level_1",
+		"level_2",
+		"level_3",
+		"level_4",
+		"level_5",
+		"level_6",
 	)
 	if nil != configs {
 		for _, vConfig := range configs {
@@ -688,7 +694,7 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 	}
 
 	if 1 == myUser.IsDelete {
-		return nil, errors.New(500, "AUTHORIZE_ERROR", "用户已删除")
+		return nil, nil
 	}
 
 	// 余额，收益总数
@@ -858,7 +864,6 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 	)
 	stakes, err = uuc.ubRepo.GetStakeByUserId(ctx, myUser.ID)
 	if nil != err {
-		fmt.Println("今日分红错误用户获取失败2")
 		return nil, err
 	}
 
@@ -884,7 +889,6 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 
 	userRecommends, err = uuc.urRepo.GetUserRecommends(ctx)
 	if nil != err {
-		fmt.Println("今日分红错误用户获取失败2")
 		return nil, err
 	}
 
@@ -973,8 +977,6 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 	} else if 6 == myUser.Last {
 		num = 1.8
 		todayTotal = myUser.AmountUsdt * level6
-	} else {
-		return nil, err
 	}
 
 	return &v1.UserInfoReply{
