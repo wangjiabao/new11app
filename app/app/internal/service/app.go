@@ -617,6 +617,75 @@ func (a *AppService) Stake(ctx context.Context, req *v1.StakeRequest) (*v1.Stake
 	return a.uuc.Stake(ctx, req, user)
 }
 
+// UnStake UnStake.
+func (a *AppService) UnStake(ctx context.Context, req *v1.UnStakeRequest) (*v1.UnStakeReply, error) {
+	// 在上下文 context 中取出 claims 对象
+	var (
+		//err           error
+		userId int64
+	)
+
+	if claims, ok := jwt.FromContext(ctx); ok {
+		c := claims.(jwt2.MapClaims)
+		if c["UserId"] == nil {
+			return &v1.UnStakeReply{
+				Status: "无效TOKEN",
+			}, nil
+		}
+		//if c["Password"] == nil {
+		//	return nil, errors.New(403, "ERROR_TOKEN", "无效TOKEN")
+		//}
+		userId = int64(c["UserId"].(float64))
+		//tokenPassword = c["Password"].(string)
+	}
+
+	// 验证
+	var (
+		err error
+	)
+
+	var (
+		user *biz.User
+	)
+	user, err = a.uuc.GetUserByUserId(ctx, userId)
+	if nil != err {
+		return &v1.UnStakeReply{
+			Status: "错误",
+		}, nil
+	}
+
+	if 1 == user.IsDelete {
+		return &v1.UnStakeReply{
+			Status: "用户已删除",
+		}, nil
+	}
+
+	//fmt.Println(user)
+	//res, address, err = verifySig2(req.SendBody.Sign, req.SendBody.PublicKey, "login")
+	//if !res || nil != err || 0 >= len(address) || address != user.Address {
+	//	return nil, errors.New(500, "AUTHORIZE_ERROR", "地址签名错误")
+	//}
+
+	var (
+		res             bool
+		addressFromSign string
+	)
+	res, addressFromSign = verifySig(req.SendBody.Sign, []byte(user.Address))
+	if !res || addressFromSign != user.Address {
+		return &v1.UnStakeReply{
+			Status: "签名错误",
+		}, nil
+	}
+
+	//if "" == req.SendBody.Password || 6 > len(req.SendBody.Password) {
+	//	return nil, errors.New(500, "AUTHORIZE_ERROR", "账户密码必须大于6位")
+	//}
+	// TODO 验证签名
+	//password := fmt.Sprintf("%x", md5.Sum([]byte(req.SendBody.Password)))
+
+	return a.uuc.UnStake(ctx, req, user)
+}
+
 // Withdraw withdraw.
 func (a *AppService) Withdraw(ctx context.Context, req *v1.WithdrawRequest) (*v1.WithdrawReply, error) {
 	// 在上下文 context 中取出 claims 对象

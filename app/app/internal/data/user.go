@@ -519,6 +519,34 @@ func (u *UserRepo) GetEthUserRecordListByUserId(ctx context.Context, userId int6
 	return res, nil
 }
 
+// GetStakeByUserId .
+func (ub *UserBalanceRepo) GetStakeByUserId(ctx context.Context, userId int64) ([]*biz.Stake, error) {
+	var stake []*Stake
+	res := make([]*biz.Stake, 0)
+	if err := ub.data.DB(ctx).Table("stake").Where("user_id=?", userId).Find(&stake).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return res, nil
+		}
+
+		return nil, errors.New(500, "PRICE CHANGE ERROR", err.Error())
+	}
+
+	for _, v := range stake {
+		res = append(res, &biz.Stake{
+			ID:        v.ID,
+			UserId:    v.UserId,
+			Status:    v.Status,
+			Day:       v.Day,
+			Amount:    v.Amount,
+			Reward:    v.Reward,
+			CreatedAt: v.CreatedAt,
+			UpdatedAt: v.UpdatedAt,
+		})
+	}
+
+	return res, nil
+}
+
 // InRecordNew .
 func (u *UserRepo) InRecordNew(ctx context.Context, userId int64, address string, amount int64, coinType string) error {
 	var err error
@@ -1689,6 +1717,55 @@ func (ub *UserBalanceRepo) ToAddressAmountUsdt(ctx context.Context, userId int64
 	reward.TypeRecordId = toUserId
 	reward.Reason = "to_amount" // 给我分红的理由
 	reward.Address = address
+	err = ub.data.DB(ctx).Table("reward").Create(&reward).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// UnStakeAmount .
+func (ub *UserBalanceRepo) UnStakeAmount(ctx context.Context, userId int64, stakeId int64, amount float64) error {
+	var err error
+	if res := ub.data.DB(ctx).Table("user_balance").
+		Where("user_id=? and balance_raw_float>=?", userId, amount).
+		Updates(map[string]interface{}{"balance_raw_float": gorm.Expr("balance_raw_float + ?", amount)}); 0 == res.RowsAffected || nil != res.Error {
+		return errors.NotFound("user balance err", "user balance error")
+	}
+
+	if err = ub.data.DB(ctx).Table("stake").
+		Where("id=? and status=?", stakeId, 0).
+		Updates(map[string]interface{}{"status": 2}).Error; nil != err {
+		return errors.NotFound("user balance err", "user balance not found")
+	}
+
+	var userBalance UserBalance
+	err = ub.data.DB(ctx).Where(&UserBalance{UserId: userId}).Table("user_balance").First(&userBalance).Error
+	if err != nil {
+		return err
+	}
+
+	var userBalanceRecode UserBalanceRecord
+	userBalanceRecode.Balance = userBalance.BalanceUsdt
+	userBalanceRecode.UserId = userBalance.UserId
+	userBalanceRecode.Type = "un_stake"
+	userBalanceRecode.CoinType = "RAW"
+	userBalanceRecode.AmountNew = amount
+	err = ub.data.DB(ctx).Table("user_balance_record").Create(&userBalanceRecode).Error
+	if err != nil {
+		return err
+	}
+
+	var (
+		reward Reward
+	)
+
+	reward.UserId = userId
+	reward.AmountNew = amount
+	reward.Type = "RAW" // 本次分红的行为类型
+	reward.TypeRecordId = stakeId
+	reward.Reason = "un_stake" // 给我分红的理由
 	err = ub.data.DB(ctx).Table("reward").Create(&reward).Error
 	if err != nil {
 		return err

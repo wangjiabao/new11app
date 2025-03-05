@@ -116,6 +116,17 @@ type UserBalance struct {
 	BalanceRawFloat     float64
 }
 
+type Stake struct {
+	ID        int64
+	UserId    int64
+	Status    int64
+	Day       int64
+	Amount    float64
+	Reward    float64
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
 type Withdraw struct {
 	ID              int64
 	UserId          int64
@@ -253,6 +264,7 @@ type UserBalanceRepo interface {
 	ToAddressAmountUsdt(ctx context.Context, userId int64, toUserId int64, amount float64, address string) error
 	ToAddressAmountRaw(ctx context.Context, userId int64, toUserId int64, amount float64, address string) error
 	StakeAmount(ctx context.Context, userId int64, amount float64, day int64) error
+	UnStakeAmount(ctx context.Context, userId int64, stakeId int64, amount float64) error
 	Exchange(ctx context.Context, userId int64, amountUsdt, fee, amountRawSub float64) error
 	Exchange2(ctx context.Context, userId int64, amount int64, amountUsdtSubFee int64, amountUsdt int64, locationId int64) error
 	WithdrawUsdt3(ctx context.Context, userId int64, amount int64) error
@@ -287,6 +299,7 @@ type UserBalanceRepo interface {
 
 	GetUserBalanceLock(ctx context.Context, userId int64) (*UserBalance, error)
 	Trade(ctx context.Context, userId int64, amount int64, amountB int64, amountRel int64, amountBRel int64, tmpRecommendUserIdsInt []int64, amount2 int64) error
+	GetStakeByUserId(ctx context.Context, userId int64) ([]*Stake, error)
 }
 
 type UserRecommendRepo interface {
@@ -730,6 +743,7 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 	)
 
 	listReward := make([]*v1.UserInfoReply_ListReward, 0)
+	listOut := make([]*v1.UserInfoReply_ListOut, 0)
 	userRewards, err = uuc.ubRepo.GetUserRewardByUserId(ctx, myUser.ID)
 	if nil != userRewards {
 		for _, vUserReward := range userRewards {
@@ -808,10 +822,56 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 					AmountRaw:  vUserReward.AmountNew,
 					RewardType: 12,
 				})
+			} else if "out" == vUserReward.Reason {
+				newAmountUsdt := vUserReward.AmountNew
+				num := float64(1)
+				if 300 <= newAmountUsdt && newAmountUsdt < 500 {
+					num = 1.5
+				} else if 500 <= newAmountUsdt && newAmountUsdt < 1000 {
+					num = 1.8
+				} else if 1000 <= newAmountUsdt && newAmountUsdt < 5000 {
+					num = 2
+				} else if 5000 <= newAmountUsdt && newAmountUsdt < 30000 {
+					num = 2.3
+				} else if 30000 <= newAmountUsdt && newAmountUsdt < 100000 {
+					num = 2.6
+				} else if 100000 <= newAmountUsdt {
+					num = 3
+				} else {
+					continue
+				}
+
+				listOut = append(listOut, &v1.UserInfoReply_ListOut{
+					Amount:    vUserReward.AmountNew,
+					Level:     num,
+					AmountGet: vUserReward.AmountNew * num,
+					CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
+				})
 			} else {
 				continue
 			}
 		}
+	}
+
+	var (
+		stakes []*Stake
+	)
+	stakes, err = uuc.ubRepo.GetStakeByUserId(ctx, myUser.ID)
+	if nil != err {
+		fmt.Println("今日分红错误用户获取失败2")
+		return nil, err
+	}
+
+	listStake := make([]*v1.UserInfoReply_ListStake, 0)
+	for _, v := range stakes {
+		listStake = append(listStake, &v1.UserInfoReply_ListStake{
+			Id:        uint64(v.ID),
+			Amount:    v.Amount,
+			Day:       uint64(v.Day),
+			Reward:    v.Reward,
+			CreatedAt: v.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
+			Status:    uint64(v.Status),
+		})
 	}
 
 	// 推荐人
@@ -941,7 +1001,8 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 		RewardThree:       userBalance.AreaTotalFloat,
 		RewardFour:        userBalance.AreaTotalFloatThree,
 		RewardFive:        userBalance.AreaTotalFloatTwo,
-		ListOut:           nil,
+		ListOut:           listOut,
+		ListStake:         listStake,
 	}, nil
 }
 
@@ -1540,6 +1601,49 @@ func (uuc *UserUseCase) TradeList(ctx context.Context, user *User) (*v1.TradeLis
 	}
 
 	return res, nil
+}
+
+func (uuc *UserUseCase) UnStake(ctx context.Context, req *v1.UnStakeRequest, user *User) (*v1.UnStakeReply, error) {
+	var (
+		err    error
+		stakes []*Stake
+	)
+
+	stakes, err = uuc.ubRepo.GetStakeByUserId(ctx, user.ID)
+	if nil != err {
+		return &v1.UnStakeReply{
+			Status: "错误",
+		}, nil
+	}
+
+	for _, v := range stakes {
+		if 0 != v.Status {
+			continue
+		}
+
+		if uint64(v.ID) != req.SendBody.Id {
+			continue
+		}
+
+		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+			err = uuc.ubRepo.UnStakeAmount(ctx, user.ID, v.ID, v.Amount) // 提现
+			if nil != err {
+				return err
+			}
+
+			return nil
+		}); nil != err {
+			return &v1.UnStakeReply{
+				Status: "错误",
+			}, nil
+		}
+
+		break
+	}
+
+	return &v1.UnStakeReply{
+		Status: "ok",
+	}, nil
 }
 
 func (uuc *UserUseCase) Stake(ctx context.Context, req *v1.StakeRequest, user *User) (*v1.StakeReply, error) {

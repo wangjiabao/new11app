@@ -535,6 +535,30 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /api/app_server/un_stake:
+        post:
+            tags:
+                - App
+            operationId: App_UnStake
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UnStakeRequest_SendBody'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UnStakeReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /api/app_server/user_area:
         get:
             tags:
@@ -928,6 +952,20 @@ components:
                     type: string
                 password:
                     type: string
+        UnStakeReply:
+            type: object
+            properties:
+                status:
+                    type: string
+        UnStakeRequest_SendBody:
+            type: object
+            properties:
+                id:
+                    type: string
+                sign:
+                    type: string
+                publicKey:
+                    type: string
         UserAreaReply:
             type: object
             properties:
@@ -1019,6 +1057,10 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/UserInfoReply_ListOut'
+                listStake:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/UserInfoReply_ListStake'
         UserInfoReply_ListEthRecordTotal:
             type: object
             properties:
@@ -1036,7 +1078,8 @@ components:
                     type: number
                     format: double
                 level:
-                    type: string
+                    type: number
+                    format: double
                 amountGet:
                     type: number
                     format: double
@@ -1056,6 +1099,23 @@ components:
                 rewardType:
                     type: string
                 createdAt:
+                    type: string
+        UserInfoReply_ListStake:
+            type: object
+            properties:
+                id:
+                    type: string
+                amount:
+                    type: number
+                    format: double
+                day:
+                    type: string
+                reward:
+                    type: number
+                    format: double
+                createdAt:
+                    type: string
+                status:
                     type: string
         WithdrawListReply:
             type: object

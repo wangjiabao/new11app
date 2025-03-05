@@ -208,6 +208,13 @@ service App {
 			body: "send_body"
 		};
 	};
+
+	rpc UnStake (UnStakeRequest) returns (UnStakeReply) {
+		option (google.api.http) = {
+			post: "/api/app_server/un_stake"
+			body: "send_body"
+		};
+	};
 //
 //	rpc AdminAll (AdminAllRequest) returns (AdminAllReply) {
 //		option (google.api.http) = {
@@ -285,6 +292,20 @@ message StakeRequest {
 }
 
 message StakeReply {
+	string status = 1;
+}
+
+message UnStakeRequest {
+	message SendBody{
+		uint64 id = 1;
+		string sign = 4;
+		string publicKey = 5;
+	}
+
+	SendBody send_body = 1;
+}
+
+message UnStakeReply {
 	string status = 1;
 }
 
@@ -387,9 +408,19 @@ message UserInfoReply {
 	repeated ListOut listOut = 135; // 收益记录
 	message ListOut {
 		double amount = 1; // rsdt金额
-		uint64 level = 4; // 倍数
+		double level = 4; // 倍数
 		double amountGet = 5; // 已产出
 		string createdAt = 3; // 时间
+	}
+
+	repeated ListStake listStake = 136; // 质押记录
+	message ListStake {
+		uint64 id = 2;
+		double amount = 1; // 质押 数量
+		uint64 day = 4; // 天数
+		double reward = 5; // 已产出
+		string createdAt = 3; // 时间
+		uint64 status = 6; //0进行中，1已完成,2已取消
 	}
 }
 
