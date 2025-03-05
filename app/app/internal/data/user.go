@@ -173,7 +173,7 @@ type UserBalanceRecord struct {
 type Stake struct {
 	ID        int64     `gorm:"primarykey;type:int"`
 	UserId    int64     `gorm:"type:int;not null"`
-	Statue    int64     `gorm:"type:int;not null"`
+	Status    int64     `gorm:"type:int;not null"`
 	Day       int64     `gorm:"type:int;not null"`
 	Amount    float64   `gorm:"type:decimal(65,20);not null"`
 	Reward    float64   `gorm:"type:decimal(65,20);not null"`
