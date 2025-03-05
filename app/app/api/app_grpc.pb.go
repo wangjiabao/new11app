@@ -44,6 +44,8 @@ const (
 	App_AdminFee_FullMethodName            = "/api.App/AdminFee"
 	App_TokenWithdraw_FullMethodName       = "/api.App/TokenWithdraw"
 	App_Buy_FullMethodName                 = "/api.App/Buy"
+	App_AmountTo_FullMethodName            = "/api.App/AmountTo"
+	App_Stake_FullMethodName               = "/api.App/Stake"
 )
 
 // AppClient is the client API for App service.
@@ -98,6 +100,8 @@ type AppClient interface {
 	AdminFee(ctx context.Context, in *AdminFeeRequest, opts ...grpc.CallOption) (*AdminFeeReply, error)
 	TokenWithdraw(ctx context.Context, in *TokenWithdrawRequest, opts ...grpc.CallOption) (*TokenWithdrawReply, error)
 	Buy(ctx context.Context, in *BuyRequest, opts ...grpc.CallOption) (*BuyReply, error)
+	AmountTo(ctx context.Context, in *AmountToRequest, opts ...grpc.CallOption) (*AmountToReply, error)
+	Stake(ctx context.Context, in *StakeRequest, opts ...grpc.CallOption) (*StakeReply, error)
 }
 
 type appClient struct {
@@ -333,6 +337,24 @@ func (c *appClient) Buy(ctx context.Context, in *BuyRequest, opts ...grpc.CallOp
 	return out, nil
 }
 
+func (c *appClient) AmountTo(ctx context.Context, in *AmountToRequest, opts ...grpc.CallOption) (*AmountToReply, error) {
+	out := new(AmountToReply)
+	err := c.cc.Invoke(ctx, App_AmountTo_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appClient) Stake(ctx context.Context, in *StakeRequest, opts ...grpc.CallOption) (*StakeReply, error) {
+	out := new(StakeReply)
+	err := c.cc.Invoke(ctx, App_Stake_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AppServer is the server API for App service.
 // All implementations must embed UnimplementedAppServer
 // for forward compatibility
@@ -385,6 +407,8 @@ type AppServer interface {
 	AdminFee(context.Context, *AdminFeeRequest) (*AdminFeeReply, error)
 	TokenWithdraw(context.Context, *TokenWithdrawRequest) (*TokenWithdrawReply, error)
 	Buy(context.Context, *BuyRequest) (*BuyReply, error)
+	AmountTo(context.Context, *AmountToRequest) (*AmountToReply, error)
+	Stake(context.Context, *StakeRequest) (*StakeReply, error)
 	mustEmbedUnimplementedAppServer()
 }
 
@@ -466,6 +490,12 @@ func (UnimplementedAppServer) TokenWithdraw(context.Context, *TokenWithdrawReque
 }
 func (UnimplementedAppServer) Buy(context.Context, *BuyRequest) (*BuyReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Buy not implemented")
+}
+func (UnimplementedAppServer) AmountTo(context.Context, *AmountToRequest) (*AmountToReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AmountTo not implemented")
+}
+func (UnimplementedAppServer) Stake(context.Context, *StakeRequest) (*StakeReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Stake not implemented")
 }
 func (UnimplementedAppServer) mustEmbedUnimplementedAppServer() {}
 
@@ -930,6 +960,42 @@ func _App_Buy_Handler(srv interface{}, ctx context.Context, dec func(interface{}
 	return interceptor(ctx, in, info, handler)
 }
 
+func _App_AmountTo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AmountToRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppServer).AmountTo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: App_AmountTo_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppServer).AmountTo(ctx, req.(*AmountToRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _App_Stake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StakeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppServer).Stake(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: App_Stake_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppServer).Stake(ctx, req.(*StakeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // App_ServiceDesc is the grpc.ServiceDesc for App service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1036,6 +1102,14 @@ var App_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Buy",
 			Handler:    _App_Buy_Handler,
+		},
+		{
+			MethodName: "AmountTo",
+			Handler:    _App_AmountTo_Handler,
+		},
+		{
+			MethodName: "Stake",
+			Handler:    _App_Stake_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

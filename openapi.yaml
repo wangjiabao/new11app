@@ -102,6 +102,30 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /api/app_server/amount_to:
+        post:
+            tags:
+                - App
+            operationId: App_AmountTo
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AmountToRequest_SendBody'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AmountToReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /api/app_server/buy:
         post:
             tags:
@@ -376,6 +400,30 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /api/app_server/stake:
+        post:
+            tags:
+                - App
+            operationId: App_Stake
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/StakeRequest_SendBody'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/StakeReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /api/app_server/token_withdraw:
         get:
             tags:
@@ -586,6 +634,24 @@ components:
         AdminWithdrawReply:
             type: object
             properties: {}
+        AmountToReply:
+            type: object
+            properties:
+                status:
+                    type: string
+        AmountToRequest_SendBody:
+            type: object
+            properties:
+                amount:
+                    type: string
+                type:
+                    type: string
+                address:
+                    type: string
+                sign:
+                    type: string
+                publicKey:
+                    type: string
         BuyReply:
             type: object
             properties:
@@ -778,6 +844,22 @@ components:
             type: object
             properties:
                 amount:
+                    type: string
+        StakeReply:
+            type: object
+            properties:
+                status:
+                    type: string
+        StakeRequest_SendBody:
+            type: object
+            properties:
+                day:
+                    type: string
+                amount:
+                    type: string
+                sign:
+                    type: string
+                publicKey:
                     type: string
         Status:
             type: object

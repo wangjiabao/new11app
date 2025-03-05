@@ -109,7 +109,7 @@ type UserBalance struct {
 	BalanceC            int64
 	RecommendTotalFloat float64
 	AreaTotalFloat      float64
-	AreaTwoTotalFloat   float64
+	AreaTotalFloatTwo   float64
 	LocationTotalFloat  float64
 	BalanceUsdtFloat    float64
 	BalanceRawFloat     float64
@@ -247,6 +247,9 @@ type UserBalanceRepo interface {
 	GreateWithdraw(ctx context.Context, userId int64, relAmount float64, amount float64, coinType string, address string) (*Withdraw, error)
 	WithdrawUsdt(ctx context.Context, userId int64, amount int64, tmpRecommendUserIdsInt []int64) error
 	WithdrawUsdt2(ctx context.Context, userId int64, amount float64) error
+	ToAddressAmountUsdt(ctx context.Context, userId int64, toUserId int64, amount float64, address string) error
+	ToAddressAmountRaw(ctx context.Context, userId int64, toUserId int64, amount float64, address string) error
+	StakeAmount(ctx context.Context, userId int64, amount float64, day int64) error
 	Exchange(ctx context.Context, userId int64, amountUsdt, fee, amountRawSub float64) error
 	Exchange2(ctx context.Context, userId int64, amount int64, amountUsdtSubFee int64, amountUsdt int64, locationId int64) error
 	WithdrawUsdt3(ctx context.Context, userId int64, amount int64) error
@@ -464,7 +467,7 @@ func (uuc *UserUseCase) GetExistUserByAddressOrCreate(ctx context.Context, u *Us
 
 			return nil
 		}); err != nil {
-			return nil, err, ""
+			return nil, err, "错误"
 		}
 	}
 
@@ -1539,8 +1542,132 @@ func (uuc *UserUseCase) TradeList(ctx context.Context, user *User) (*v1.TradeLis
 	return res, nil
 }
 
-func lessThanOrEqualZero(a, b float64, epsilon float64) bool {
-	return a-b < epsilon || math.Abs(a-b) < epsilon
+func (uuc *UserUseCase) Stake(ctx context.Context, req *v1.StakeRequest, user *User) (*v1.StakeReply, error) {
+	var (
+		err         error
+		userBalance *UserBalance
+		day         = int64(10)
+	)
+
+	userBalance, err = uuc.ubRepo.GetUserBalance(ctx, user.ID)
+	if nil != err {
+		return &v1.StakeReply{
+			Status: "错误",
+		}, nil
+	}
+
+	amountFloat := float64(req.SendBody.Amount)
+	if userBalance.BalanceRawFloat < amountFloat {
+		return &v1.StakeReply{
+			Status: "余额不足",
+		}, nil
+	}
+
+	if 1 > amountFloat {
+		return &v1.StakeReply{
+			Status: "金额错误",
+		}, nil
+	}
+
+	if 10 == req.SendBody.Day {
+		day = 10
+	} else if 30 == req.SendBody.Day {
+		day = 30
+	} else {
+		return &v1.StakeReply{
+			Status: "错误天数",
+		}, nil
+	}
+
+	if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+		err = uuc.ubRepo.StakeAmount(ctx, user.ID, amountFloat, day) // 提现
+		if nil != err {
+			return err
+		}
+
+		return nil
+	}); nil != err {
+		return &v1.StakeReply{
+			Status: "错误",
+		}, nil
+	}
+
+	return &v1.StakeReply{
+		Status: "ok",
+	}, nil
+}
+
+func (uuc *UserUseCase) AmountTo(ctx context.Context, req *v1.AmountToRequest, user *User) (*v1.AmountToReply, error) {
+	var (
+		err         error
+		userBalance *UserBalance
+		toUser      *User
+	)
+
+	userBalance, err = uuc.ubRepo.GetUserBalance(ctx, user.ID)
+	if nil != err {
+		return &v1.AmountToReply{
+			Status: "错误",
+		}, nil
+	}
+
+	amountFloat := float64(req.SendBody.Amount)
+	if "rwb" == req.SendBody.Type {
+		if userBalance.BalanceRawFloat < amountFloat {
+			return &v1.AmountToReply{
+				Status: "余额不足",
+			}, nil
+		}
+	} else {
+		if userBalance.BalanceUsdtFloat < amountFloat {
+			return &v1.AmountToReply{
+				Status: "余额不足",
+			}, nil
+		}
+	}
+
+	if 1 > amountFloat {
+		return &v1.AmountToReply{
+			Status: "金额错误",
+		}, nil
+	}
+
+	toUser, err = uuc.repo.GetUserByAddress(ctx, req.SendBody.Address)
+	if nil != err {
+		return &v1.AmountToReply{
+			Status: "错误",
+		}, nil
+	}
+
+	if nil == toUser {
+		return &v1.AmountToReply{
+			Status: "地址错误",
+		}, nil
+	}
+
+	if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
+		if "rwb" == req.SendBody.Type {
+			err = uuc.ubRepo.ToAddressAmountRaw(ctx, user.ID, toUser.ID, amountFloat, toUser.Address) // 提现
+			if nil != err {
+				return err
+			}
+		} else {
+			err = uuc.ubRepo.ToAddressAmountUsdt(ctx, user.ID, toUser.ID, amountFloat, toUser.Address) // 提现
+			if nil != err {
+				return err
+			}
+		}
+
+		return nil
+	}); nil != err {
+		return &v1.AmountToReply{
+			Status: "错误",
+		}, nil
+	}
+
+	return &v1.AmountToReply{
+		Status: "ok",
+	}, nil
 }
 
 func (uuc *UserUseCase) Buy(ctx context.Context, req *v1.BuyRequest, user *User) (*v1.BuyReply, error) {
@@ -1578,6 +1705,12 @@ func (uuc *UserUseCase) Buy(ctx context.Context, req *v1.BuyRequest, user *User)
 	if nil != err {
 		return &v1.BuyReply{
 			Status: "错误",
+		}, nil
+	}
+
+	if 1 > float64(amount) {
+		return &v1.BuyReply{
+			Status: "错误金额",
 		}, nil
 	}
 
@@ -1969,13 +2102,23 @@ func (uuc *UserUseCase) Exchange(ctx context.Context, req *v1.ExchangeRequest, u
 
 	userBalance, err = uuc.ubRepo.GetUserBalance(ctx, user.ID)
 	if nil != err {
-		return nil, err
+		return &v1.ExchangeReply{
+			Status: "错误",
+		}, nil
 	}
 
 	amountFloat, _ := strconv.ParseFloat(req.SendBody.Amount, 10)
 
 	if userBalance.BalanceUsdtFloat < amountFloat {
-		amountFloat = userBalance.BalanceUsdtFloat
+		return &v1.ExchangeReply{
+			Status: "余额不足",
+		}, nil
+	}
+
+	if 1 > amountFloat {
+		return &v1.ExchangeReply{
+			Status: "错误金额",
+		}, nil
 	}
 
 	// 配置
@@ -2020,7 +2163,9 @@ func (uuc *UserUseCase) Exchange(ctx context.Context, req *v1.ExchangeRequest, u
 
 		return nil
 	}); nil != err {
-		return nil, err
+		return &v1.ExchangeReply{
+			Status: "错误",
+		}, nil
 	}
 
 	return &v1.ExchangeReply{
@@ -2037,10 +2182,23 @@ func (uuc *UserUseCase) Withdraw(ctx context.Context, req *v1.WithdrawRequest, u
 
 	userBalance, err = uuc.ubRepo.GetUserBalance(ctx, user.ID)
 	if nil != err {
-		return nil, err
+		return &v1.WithdrawReply{
+			Status: "错误",
+		}, nil
 	}
 
 	amountFloat, _ := strconv.ParseFloat(req.SendBody.Amount, 10)
+	if userBalance.BalanceRawFloat < amountFloat {
+		return &v1.WithdrawReply{
+			Status: "余额不足",
+		}, nil
+	}
+
+	if 1 > amountFloat {
+		return &v1.WithdrawReply{
+			Status: "错误金额",
+		}, nil
+	}
 
 	// 配置
 	var (
@@ -2061,10 +2219,6 @@ func (uuc *UserUseCase) Withdraw(ctx context.Context, req *v1.WithdrawRequest, u
 				withdrawMin, _ = strconv.ParseFloat(vConfig.Value, 10)
 			}
 		}
-	}
-
-	if userBalance.BalanceRawFloat < amountFloat {
-		amountFloat = userBalance.BalanceRawFloat
 	}
 
 	if withdrawMax < amountFloat {
@@ -2098,7 +2252,9 @@ func (uuc *UserUseCase) Withdraw(ctx context.Context, req *v1.WithdrawRequest, u
 
 		return nil
 	}); nil != err {
-		return nil, err
+		return &v1.WithdrawReply{
+			Status: "错误",
+		}, nil
 	}
 
 	return &v1.WithdrawReply{

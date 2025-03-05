@@ -194,6 +194,20 @@ service App {
 			body: "send_body"
 		};
 	};
+
+	rpc AmountTo (AmountToRequest) returns (AmountToReply) {
+		option (google.api.http) = {
+			post: "/api/app_server/amount_to"
+			body: "send_body"
+		};
+	};
+
+	rpc Stake (StakeRequest) returns (StakeReply) {
+		option (google.api.http) = {
+			post: "/api/app_server/stake"
+			body: "send_body"
+		};
+	};
 //
 //	rpc AdminAll (AdminAllRequest) returns (AdminAllReply) {
 //		option (google.api.http) = {
@@ -240,6 +254,37 @@ message BuyRequest {
 }
 
 message BuyReply {
+	string status = 1;
+}
+
+message AmountToRequest {
+	message SendBody{
+		uint64 amount = 1;
+		string type = 2;
+		string address = 3;
+		string sign = 4;
+		string publicKey = 5;
+	}
+
+	SendBody send_body = 1;
+}
+
+message AmountToReply {
+	string status = 1;
+}
+
+message StakeRequest {
+	message SendBody{
+		uint64 day = 1;
+		uint64 amount = 6;
+		string sign = 4;
+		string publicKey = 5;
+	}
+
+	SendBody send_body = 1;
+}
+
+message StakeReply {
 	string status = 1;
 }
 

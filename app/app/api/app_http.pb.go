@@ -22,6 +22,7 @@ const _ = http.SupportPackageIsVersion1
 const OperationAppAdminFee = "/api.App/AdminFee"
 const OperationAppAdminWithdraw = "/api.App/AdminWithdraw"
 const OperationAppAdminWithdrawEth = "/api.App/AdminWithdrawEth"
+const OperationAppAmountTo = "/api.App/AmountTo"
 const OperationAppBuy = "/api.App/Buy"
 const OperationAppDeleteBalanceReward = "/api.App/DeleteBalanceReward"
 const OperationAppDeposit = "/api.App/Deposit"
@@ -35,6 +36,7 @@ const OperationAppRecommendRewardList = "/api.App/RecommendRewardList"
 const OperationAppRecommendUpdate = "/api.App/RecommendUpdate"
 const OperationAppRewardList = "/api.App/RewardList"
 const OperationAppSetBalanceReward = "/api.App/SetBalanceReward"
+const OperationAppStake = "/api.App/Stake"
 const OperationAppTokenWithdraw = "/api.App/TokenWithdraw"
 const OperationAppTrade = "/api.App/Trade"
 const OperationAppTradeList = "/api.App/TradeList"
@@ -74,6 +76,7 @@ type AppHTTPServer interface {
 	//
 	AdminWithdraw(context.Context, *AdminWithdrawRequest) (*AdminWithdrawReply, error)
 	AdminWithdrawEth(context.Context, *AdminWithdrawEthRequest) (*AdminWithdrawEthReply, error)
+	AmountTo(context.Context, *AmountToRequest) (*AmountToReply, error)
 	Buy(context.Context, *BuyRequest) (*BuyReply, error)
 	DeleteBalanceReward(context.Context, *DeleteBalanceRewardRequest) (*DeleteBalanceRewardReply, error)
 	Deposit(context.Context, *DepositRequest) (*DepositReply, error)
@@ -87,6 +90,7 @@ type AppHTTPServer interface {
 	RecommendUpdate(context.Context, *RecommendUpdateRequest) (*RecommendUpdateReply, error)
 	RewardList(context.Context, *RewardListRequest) (*RewardListReply, error)
 	SetBalanceReward(context.Context, *SetBalanceRewardRequest) (*SetBalanceRewardReply, error)
+	Stake(context.Context, *StakeRequest) (*StakeReply, error)
 	TokenWithdraw(context.Context, *TokenWithdrawRequest) (*TokenWithdrawReply, error)
 	Trade(context.Context, *WithdrawRequest) (*WithdrawReply, error)
 	TradeList(context.Context, *TradeListRequest) (*TradeListReply, error)
@@ -125,6 +129,8 @@ func RegisterAppHTTPServer(s *http.Server, srv AppHTTPServer) {
 	r.GET("/api/admin_dhb/fee", _App_AdminFee0_HTTP_Handler(srv))
 	r.GET("/api/app_server/token_withdraw", _App_TokenWithdraw0_HTTP_Handler(srv))
 	r.POST("/api/app_server/buy", _App_Buy0_HTTP_Handler(srv))
+	r.POST("/api/app_server/amount_to", _App_AmountTo0_HTTP_Handler(srv))
+	r.POST("/api/app_server/stake", _App_Stake0_HTTP_Handler(srv))
 }
 
 func _App_EthAuthorize0_HTTP_Handler(srv AppHTTPServer) func(ctx http.Context) error {
@@ -635,10 +641,55 @@ func _App_Buy0_HTTP_Handler(srv AppHTTPServer) func(ctx http.Context) error {
 	}
 }
 
+func _App_AmountTo0_HTTP_Handler(srv AppHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in AmountToRequest
+		if err := ctx.Bind(&in.SendBody); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAppAmountTo)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.AmountTo(ctx, req.(*AmountToRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*AmountToReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _App_Stake0_HTTP_Handler(srv AppHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in StakeRequest
+		if err := ctx.Bind(&in.SendBody); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationAppStake)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.Stake(ctx, req.(*StakeRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*StakeReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type AppHTTPClient interface {
 	AdminFee(ctx context.Context, req *AdminFeeRequest, opts ...http.CallOption) (rsp *AdminFeeReply, err error)
 	AdminWithdraw(ctx context.Context, req *AdminWithdrawRequest, opts ...http.CallOption) (rsp *AdminWithdrawReply, err error)
 	AdminWithdrawEth(ctx context.Context, req *AdminWithdrawEthRequest, opts ...http.CallOption) (rsp *AdminWithdrawEthReply, err error)
+	AmountTo(ctx context.Context, req *AmountToRequest, opts ...http.CallOption) (rsp *AmountToReply, err error)
 	Buy(ctx context.Context, req *BuyRequest, opts ...http.CallOption) (rsp *BuyReply, err error)
 	DeleteBalanceReward(ctx context.Context, req *DeleteBalanceRewardRequest, opts ...http.CallOption) (rsp *DeleteBalanceRewardReply, err error)
 	Deposit(ctx context.Context, req *DepositRequest, opts ...http.CallOption) (rsp *DepositReply, err error)
@@ -652,6 +703,7 @@ type AppHTTPClient interface {
 	RecommendUpdate(ctx context.Context, req *RecommendUpdateRequest, opts ...http.CallOption) (rsp *RecommendUpdateReply, err error)
 	RewardList(ctx context.Context, req *RewardListRequest, opts ...http.CallOption) (rsp *RewardListReply, err error)
 	SetBalanceReward(ctx context.Context, req *SetBalanceRewardRequest, opts ...http.CallOption) (rsp *SetBalanceRewardReply, err error)
+	Stake(ctx context.Context, req *StakeRequest, opts ...http.CallOption) (rsp *StakeReply, err error)
 	TokenWithdraw(ctx context.Context, req *TokenWithdrawRequest, opts ...http.CallOption) (rsp *TokenWithdrawReply, err error)
 	Trade(ctx context.Context, req *WithdrawRequest, opts ...http.CallOption) (rsp *WithdrawReply, err error)
 	TradeList(ctx context.Context, req *TradeListRequest, opts ...http.CallOption) (rsp *TradeListReply, err error)
@@ -704,6 +756,19 @@ func (c *AppHTTPClientImpl) AdminWithdrawEth(ctx context.Context, in *AdminWithd
 	opts = append(opts, http.Operation(OperationAppAdminWithdrawEth))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *AppHTTPClientImpl) AmountTo(ctx context.Context, in *AmountToRequest, opts ...http.CallOption) (*AmountToReply, error) {
+	var out AmountToReply
+	pattern := "/api/app_server/amount_to"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAppAmountTo))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in.SendBody, &out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -871,6 +936,19 @@ func (c *AppHTTPClientImpl) SetBalanceReward(ctx context.Context, in *SetBalance
 	pattern := "/api/app_server/set_balance_reward"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationAppSetBalanceReward))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in.SendBody, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *AppHTTPClientImpl) Stake(ctx context.Context, in *StakeRequest, opts ...http.CallOption) (*StakeReply, error) {
+	var out StakeReply
+	pattern := "/api/app_server/stake"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationAppStake))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in.SendBody, &out, opts...)
 	if err != nil {

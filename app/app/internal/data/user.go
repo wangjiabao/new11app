@@ -133,7 +133,7 @@ type UserBalance struct {
 	FourTotal           int64     `gorm:"type:bigint"`
 	BalanceC            int64     `gorm:"type:bigint"`
 	AreaTotalFloat      float64   `gorm:"type:decimal(65,20);not null"`
-	AreaTwoTotalFloat   float64   `gorm:"type:decimal(65,20);not null"`
+	AreaTotalFloatTwo   float64   `gorm:"type:decimal(65,20);not null"`
 	RecommendTotalFloat float64   `gorm:"type:decimal(65,20);not null"`
 	LocationTotalFloat  float64   `gorm:"type:decimal(65,20);not null"`
 	BalanceUsdtFloat    float64   `gorm:"type:decimal(65,20);not null"`
@@ -156,16 +156,28 @@ type Withdraw struct {
 }
 
 type UserBalanceRecord struct {
-	ID         int64     `gorm:"primarykey;type:int"`
-	UserId     int64     `gorm:"type:int"`
-	Balance    int64     `gorm:"type:bigint"`
-	Amount     int64     `gorm:"type:bigint"`
-	Type       string    `gorm:"type:varchar(45);not null"`
-	CoinType   string    `gorm:"type:varchar(45);not null"`
-	CreatedAt  time.Time `gorm:"type:datetime;not null"`
-	UpdatedAt  time.Time `gorm:"type:datetime;not null"`
-	BalanceNew float64   `gorm:"type:decimal(65,20);not null"`
-	AmountNew  float64   `gorm:"type:decimal(65,20);not null"`
+	ID           int64     `gorm:"primarykey;type:int"`
+	UserId       int64     `gorm:"type:int"`
+	Balance      int64     `gorm:"type:bigint"`
+	Amount       int64     `gorm:"type:bigint"`
+	Type         string    `gorm:"type:varchar(45);not null"`
+	CoinType     string    `gorm:"type:varchar(45);not null"`
+	CreatedAt    time.Time `gorm:"type:datetime;not null"`
+	UpdatedAt    time.Time `gorm:"type:datetime;not null"`
+	BalanceNew   float64   `gorm:"type:decimal(65,20);not null"`
+	AmountNew    float64   `gorm:"type:decimal(65,20);not null"`
+	AmountNewTwo float64   `gorm:"type:decimal(65,20);not null"`
+}
+
+type Stake struct {
+	ID        int64     `gorm:"primarykey;type:int"`
+	UserId    int64     `gorm:"type:int;not null"`
+	Statue    int64     `gorm:"type:int;not null"`
+	Day       int64     `gorm:"type:int;not null"`
+	Amount    float64   `gorm:"type:decimal(65,20);not null"`
+	Reward    float64   `gorm:"type:decimal(65,20);not null"`
+	CreatedAt time.Time `gorm:"type:datetime;not null"`
+	UpdatedAt time.Time `gorm:"type:datetime;not null"`
 }
 
 type Reward struct {
@@ -1324,7 +1336,7 @@ func (ub UserBalanceRepo) GetUserBalance(ctx context.Context, userId int64) (*bi
 		FourTotal:           userBalance.FourTotal,
 		BalanceC:            userBalance.BalanceC,
 		AreaTotalFloat:      userBalance.AreaTotalFloat,
-		AreaTwoTotalFloat:   userBalance.AreaTwoTotalFloat,
+		AreaTotalFloatTwo:   userBalance.AreaTotalFloatTwo,
 		RecommendTotalFloat: userBalance.RecommendTotalFloat,
 		LocationTotalFloat:  userBalance.LocationTotalFloat,
 		BalanceRawFloat:     userBalance.BalanceRawFloat,
@@ -1633,6 +1645,160 @@ func (ub *UserBalanceRepo) UpdateWithdrawAmount(ctx context.Context, id int64, s
 	}, nil
 }
 
+// ToAddressAmountUsdt .
+func (ub *UserBalanceRepo) ToAddressAmountUsdt(ctx context.Context, userId int64, toUserId int64, amount float64, address string) error {
+	var err error
+	if res := ub.data.DB(ctx).Table("user_balance").
+		Where("user_id=? and balance_usdt_float>=?", userId, amount).
+		Updates(map[string]interface{}{"balance_usdt_float": gorm.Expr("balance_usdt_float - ?", amount)}); 0 == res.RowsAffected || nil != res.Error {
+		return errors.NotFound("user balance err", "user balance error")
+	}
+
+	if res2 := ub.data.DB(ctx).Table("user_balance").
+		Where("user_id=?", toUserId).
+		Updates(map[string]interface{}{"balance_usdt_float": gorm.Expr("balance_usdt_float + ?", amount)}); 0 == res2.RowsAffected || nil != res2.Error {
+		return errors.NotFound("user balance err", "user balance error")
+	}
+
+	var userBalance UserBalance
+	err = ub.data.DB(ctx).Where(&UserBalance{UserId: userId}).Table("user_balance").First(&userBalance).Error
+	if err != nil {
+		return err
+	}
+
+	var userBalanceRecode UserBalanceRecord
+	userBalanceRecode.Balance = userBalance.BalanceUsdt
+	userBalanceRecode.UserId = userBalance.UserId
+	userBalanceRecode.Type = "to_amount"
+	userBalanceRecode.CoinType = "USDT"
+	userBalanceRecode.AmountNew = amount
+	err = ub.data.DB(ctx).Table("user_balance_record").Create(&userBalanceRecode).Error
+	if err != nil {
+		return err
+	}
+
+	var (
+		reward Reward
+	)
+
+	reward.UserId = userId
+	reward.AmountNew = amount
+	reward.Type = "USDT" // 本次分红的行为类型
+	reward.TypeRecordId = toUserId
+	reward.Reason = "to_amount" // 给我分红的理由
+	reward.Address = address
+	err = ub.data.DB(ctx).Table("reward").Create(&reward).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// StakeAmount .
+func (ub *UserBalanceRepo) StakeAmount(ctx context.Context, userId int64, amount float64, day int64) error {
+	var err error
+	if res := ub.data.DB(ctx).Table("user_balance").
+		Where("user_id=? and balance_raw_float>=?", userId, amount).
+		Updates(map[string]interface{}{"balance_raw_float": gorm.Expr("balance_raw_float - ?", amount)}); 0 == res.RowsAffected || nil != res.Error {
+		return errors.NotFound("user balance err", "user balance error")
+	}
+
+	var userBalance UserBalance
+	err = ub.data.DB(ctx).Where(&UserBalance{UserId: userId}).Table("user_balance").First(&userBalance).Error
+	if err != nil {
+		return err
+	}
+
+	var userBalanceRecode UserBalanceRecord
+	userBalanceRecode.Balance = userBalance.BalanceUsdt
+	userBalanceRecode.UserId = userBalance.UserId
+	userBalanceRecode.Type = "stake"
+	userBalanceRecode.CoinType = "RAW"
+	userBalanceRecode.AmountNew = amount
+	err = ub.data.DB(ctx).Table("user_balance_record").Create(&userBalanceRecode).Error
+	if err != nil {
+		return err
+	}
+
+	var (
+		reward Reward
+	)
+
+	reward.UserId = userId
+	reward.AmountNew = amount
+	reward.Type = "RAW" // 本次分红的行为类型
+	reward.TypeRecordId = int64(day)
+	reward.Reason = "stake" // 给我分红的理由
+	err = ub.data.DB(ctx).Table("reward").Create(&reward).Error
+	if err != nil {
+		return err
+	}
+
+	var (
+		stake Stake
+	)
+	stake.Amount = amount
+	stake.UserId = userId
+	stake.Day = day
+	err = ub.data.DB(ctx).Table("stake").Create(&stake).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ToAddressAmountRaw .
+func (ub *UserBalanceRepo) ToAddressAmountRaw(ctx context.Context, userId int64, toUserId int64, amount float64, address string) error {
+	var err error
+	if res := ub.data.DB(ctx).Table("user_balance").
+		Where("user_id=? and balance_raw_float>=?", userId, amount).
+		Updates(map[string]interface{}{"balance_raw_float": gorm.Expr("balance_raw_float - ?", amount)}); 0 == res.RowsAffected || nil != res.Error {
+		return errors.NotFound("user balance err", "user balance error")
+	}
+
+	if res2 := ub.data.DB(ctx).Table("user_balance").
+		Where("user_id=?", toUserId).
+		Updates(map[string]interface{}{"balance_raw_float": gorm.Expr("balance_raw_float + ?", amount)}); 0 == res2.RowsAffected || nil != res2.Error {
+		return errors.NotFound("user balance err", "user balance error")
+	}
+
+	var userBalance UserBalance
+	err = ub.data.DB(ctx).Where(&UserBalance{UserId: userId}).Table("user_balance").First(&userBalance).Error
+	if err != nil {
+		return err
+	}
+
+	var userBalanceRecode UserBalanceRecord
+	userBalanceRecode.Balance = userBalance.BalanceUsdt
+	userBalanceRecode.UserId = userBalance.UserId
+	userBalanceRecode.Type = "to_amount"
+	userBalanceRecode.CoinType = "RAW"
+	userBalanceRecode.AmountNew = amount
+	err = ub.data.DB(ctx).Table("user_balance_record").Create(&userBalanceRecode).Error
+	if err != nil {
+		return err
+	}
+
+	var (
+		reward Reward
+	)
+
+	reward.UserId = userId
+	reward.AmountNew = amount
+	reward.Type = "RAW" // 本次分红的行为类型
+	reward.TypeRecordId = toUserId
+	reward.Reason = "to_amount" // 给我分红的理由
+	reward.Address = address
+	err = ub.data.DB(ctx).Table("reward").Create(&reward).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // WithdrawUsdt2 .
 func (ub *UserBalanceRepo) WithdrawUsdt2(ctx context.Context, userId int64, amount float64) error {
 	var err error
@@ -1674,11 +1840,11 @@ func (ub *UserBalanceRepo) Exchange(ctx context.Context, userId int64, amountUsd
 		return errors.NotFound("user balance err", "user balance error")
 	}
 
-	res := ub.data.DB(ctx).Table("total").Where("id=?", 1).
-		Updates(map[string]interface{}{"two": gorm.Expr("two + ?", fee)})
-	if res.Error != nil {
-		return errors.New(500, "UPDATE_USER_ERROR", "one信息修改失败")
-	}
+	//res := ub.data.DB(ctx).Table("total").Where("id=?", 1).
+	//	Updates(map[string]interface{}{"two": gorm.Expr("two + ?", fee)})
+	//if res.Error != nil {
+	//	return errors.New(500, "UPDATE_USER_ERROR", "one信息修改失败")
+	//}
 
 	var userBalance UserBalance
 	err = ub.data.DB(ctx).Where(&UserBalance{UserId: userId}).Table("user_balance").First(&userBalance).Error
@@ -1692,6 +1858,7 @@ func (ub *UserBalanceRepo) Exchange(ctx context.Context, userId int64, amountUsd
 	userBalanceRecode.Type = "exchange"
 	userBalanceRecode.CoinType = "RAW"
 	userBalanceRecode.AmountNew = amountRawSub
+	userBalanceRecode.AmountNewTwo = fee
 	err = ub.data.DB(ctx).Table("user_balance_record").Create(&userBalanceRecode).Error
 	if err != nil {
 		return err
