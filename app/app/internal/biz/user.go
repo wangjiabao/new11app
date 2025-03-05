@@ -1009,7 +1009,7 @@ func (uuc *UserUseCase) UserRecommend(ctx context.Context, req *v1.RecommendList
 		recommendTotal++
 		res = append(res, &v1.RecommendListReply_List{
 			Address:   usersMap[vMyUserRecommend.UserId].Address,
-			Amount:    usersMap[vMyUserRecommend.UserId].MyTotalAmount,
+			Amount:    usersMap[vMyUserRecommend.UserId].MyTotalAmount + usersMap[vMyUserRecommend.UserId].AmountUsdt,
 			CreatedAt: vMyUserRecommend.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
 		})
 	}
