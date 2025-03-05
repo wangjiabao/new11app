@@ -264,6 +264,466 @@ var _ interface {
 	ErrorName() string
 } = BuyReplyValidationError{}
 
+// Validate checks the field values on AmountToRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *AmountToRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AmountToRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// AmountToRequestMultiError, or nil if none found.
+func (m *AmountToRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AmountToRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetSendBody()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, AmountToRequestValidationError{
+					field:  "SendBody",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, AmountToRequestValidationError{
+					field:  "SendBody",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetSendBody()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return AmountToRequestValidationError{
+				field:  "SendBody",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return AmountToRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// AmountToRequestMultiError is an error wrapping multiple validation errors
+// returned by AmountToRequest.ValidateAll() if the designated constraints
+// aren't met.
+type AmountToRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AmountToRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AmountToRequestMultiError) AllErrors() []error { return m }
+
+// AmountToRequestValidationError is the validation error returned by
+// AmountToRequest.Validate if the designated constraints aren't met.
+type AmountToRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AmountToRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AmountToRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AmountToRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AmountToRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AmountToRequestValidationError) ErrorName() string { return "AmountToRequestValidationError" }
+
+// Error satisfies the builtin error interface
+func (e AmountToRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAmountToRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AmountToRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AmountToRequestValidationError{}
+
+// Validate checks the field values on AmountToReply with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *AmountToReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AmountToReply with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in AmountToReplyMultiError, or
+// nil if none found.
+func (m *AmountToReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AmountToReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Status
+
+	if len(errors) > 0 {
+		return AmountToReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// AmountToReplyMultiError is an error wrapping multiple validation errors
+// returned by AmountToReply.ValidateAll() if the designated constraints
+// aren't met.
+type AmountToReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AmountToReplyMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AmountToReplyMultiError) AllErrors() []error { return m }
+
+// AmountToReplyValidationError is the validation error returned by
+// AmountToReply.Validate if the designated constraints aren't met.
+type AmountToReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AmountToReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AmountToReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AmountToReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AmountToReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AmountToReplyValidationError) ErrorName() string { return "AmountToReplyValidationError" }
+
+// Error satisfies the builtin error interface
+func (e AmountToReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAmountToReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AmountToReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AmountToReplyValidationError{}
+
+// Validate checks the field values on StakeRequest with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *StakeRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on StakeRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in StakeRequestMultiError, or
+// nil if none found.
+func (m *StakeRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *StakeRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetSendBody()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, StakeRequestValidationError{
+					field:  "SendBody",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, StakeRequestValidationError{
+					field:  "SendBody",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetSendBody()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return StakeRequestValidationError{
+				field:  "SendBody",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return StakeRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// StakeRequestMultiError is an error wrapping multiple validation errors
+// returned by StakeRequest.ValidateAll() if the designated constraints aren't met.
+type StakeRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m StakeRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m StakeRequestMultiError) AllErrors() []error { return m }
+
+// StakeRequestValidationError is the validation error returned by
+// StakeRequest.Validate if the designated constraints aren't met.
+type StakeRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e StakeRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e StakeRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e StakeRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e StakeRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e StakeRequestValidationError) ErrorName() string { return "StakeRequestValidationError" }
+
+// Error satisfies the builtin error interface
+func (e StakeRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sStakeRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = StakeRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = StakeRequestValidationError{}
+
+// Validate checks the field values on StakeReply with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *StakeReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on StakeReply with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in StakeReplyMultiError, or
+// nil if none found.
+func (m *StakeReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *StakeReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Status
+
+	if len(errors) > 0 {
+		return StakeReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// StakeReplyMultiError is an error wrapping multiple validation errors
+// returned by StakeReply.ValidateAll() if the designated constraints aren't met.
+type StakeReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m StakeReplyMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m StakeReplyMultiError) AllErrors() []error { return m }
+
+// StakeReplyValidationError is the validation error returned by
+// StakeReply.Validate if the designated constraints aren't met.
+type StakeReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e StakeReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e StakeReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e StakeReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e StakeReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e StakeReplyValidationError) ErrorName() string { return "StakeReplyValidationError" }
+
+// Error satisfies the builtin error interface
+func (e StakeReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sStakeReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = StakeReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = StakeReplyValidationError{}
+
 // Validate checks the field values on EthAuthorizeRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -1346,210 +1806,6 @@ func (m *UserInfoReply) validate(all bool) error {
 	// no validation rules for WithdrawMax
 
 	// no validation rules for WithdrawMin
-
-	for idx, item := range m.GetListEth() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, UserInfoReplyValidationError{
-						field:  fmt.Sprintf("ListEth[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, UserInfoReplyValidationError{
-						field:  fmt.Sprintf("ListEth[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return UserInfoReplyValidationError{
-					field:  fmt.Sprintf("ListEth[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
-	}
-
-	for idx, item := range m.GetListBuy() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, UserInfoReplyValidationError{
-						field:  fmt.Sprintf("ListBuy[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, UserInfoReplyValidationError{
-						field:  fmt.Sprintf("ListBuy[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return UserInfoReplyValidationError{
-					field:  fmt.Sprintf("ListBuy[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
-	}
-
-	for idx, item := range m.GetListWithdraw() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, UserInfoReplyValidationError{
-						field:  fmt.Sprintf("ListWithdraw[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, UserInfoReplyValidationError{
-						field:  fmt.Sprintf("ListWithdraw[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return UserInfoReplyValidationError{
-					field:  fmt.Sprintf("ListWithdraw[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
-	}
-
-	for idx, item := range m.GetListExchange() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, UserInfoReplyValidationError{
-						field:  fmt.Sprintf("ListExchange[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, UserInfoReplyValidationError{
-						field:  fmt.Sprintf("ListExchange[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return UserInfoReplyValidationError{
-					field:  fmt.Sprintf("ListExchange[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
-	}
-
-	for idx, item := range m.GetListTo() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, UserInfoReplyValidationError{
-						field:  fmt.Sprintf("ListTo[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, UserInfoReplyValidationError{
-						field:  fmt.Sprintf("ListTo[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return UserInfoReplyValidationError{
-					field:  fmt.Sprintf("ListTo[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
-	}
-
-	for idx, item := range m.GetListStake() {
-		_, _ = idx, item
-
-		if all {
-			switch v := interface{}(item).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, UserInfoReplyValidationError{
-						field:  fmt.Sprintf("ListStake[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, UserInfoReplyValidationError{
-						field:  fmt.Sprintf("ListStake[%v]", idx),
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return UserInfoReplyValidationError{
-					field:  fmt.Sprintf("ListStake[%v]", idx),
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
-	}
 
 	for idx, item := range m.GetListReward() {
 		_, _ = idx, item
@@ -8095,6 +8351,228 @@ var _ interface {
 	ErrorName() string
 } = BuyRequest_SendBodyValidationError{}
 
+// Validate checks the field values on AmountToRequest_SendBody with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *AmountToRequest_SendBody) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AmountToRequest_SendBody with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// AmountToRequest_SendBodyMultiError, or nil if none found.
+func (m *AmountToRequest_SendBody) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AmountToRequest_SendBody) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Amount
+
+	// no validation rules for Type
+
+	// no validation rules for Address
+
+	// no validation rules for Sign
+
+	// no validation rules for PublicKey
+
+	if len(errors) > 0 {
+		return AmountToRequest_SendBodyMultiError(errors)
+	}
+
+	return nil
+}
+
+// AmountToRequest_SendBodyMultiError is an error wrapping multiple validation
+// errors returned by AmountToRequest_SendBody.ValidateAll() if the designated
+// constraints aren't met.
+type AmountToRequest_SendBodyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AmountToRequest_SendBodyMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AmountToRequest_SendBodyMultiError) AllErrors() []error { return m }
+
+// AmountToRequest_SendBodyValidationError is the validation error returned by
+// AmountToRequest_SendBody.Validate if the designated constraints aren't met.
+type AmountToRequest_SendBodyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AmountToRequest_SendBodyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AmountToRequest_SendBodyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AmountToRequest_SendBodyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AmountToRequest_SendBodyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AmountToRequest_SendBodyValidationError) ErrorName() string {
+	return "AmountToRequest_SendBodyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e AmountToRequest_SendBodyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAmountToRequest_SendBody.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AmountToRequest_SendBodyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AmountToRequest_SendBodyValidationError{}
+
+// Validate checks the field values on StakeRequest_SendBody with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *StakeRequest_SendBody) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on StakeRequest_SendBody with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// StakeRequest_SendBodyMultiError, or nil if none found.
+func (m *StakeRequest_SendBody) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *StakeRequest_SendBody) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Day
+
+	// no validation rules for Amount
+
+	// no validation rules for Sign
+
+	// no validation rules for PublicKey
+
+	if len(errors) > 0 {
+		return StakeRequest_SendBodyMultiError(errors)
+	}
+
+	return nil
+}
+
+// StakeRequest_SendBodyMultiError is an error wrapping multiple validation
+// errors returned by StakeRequest_SendBody.ValidateAll() if the designated
+// constraints aren't met.
+type StakeRequest_SendBodyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m StakeRequest_SendBodyMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m StakeRequest_SendBodyMultiError) AllErrors() []error { return m }
+
+// StakeRequest_SendBodyValidationError is the validation error returned by
+// StakeRequest_SendBody.Validate if the designated constraints aren't met.
+type StakeRequest_SendBodyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e StakeRequest_SendBodyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e StakeRequest_SendBodyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e StakeRequest_SendBodyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e StakeRequest_SendBodyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e StakeRequest_SendBodyValidationError) ErrorName() string {
+	return "StakeRequest_SendBodyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e StakeRequest_SendBodyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sStakeRequest_SendBody.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = StakeRequest_SendBodyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = StakeRequest_SendBodyValidationError{}
+
 // Validate checks the field values on EthAuthorizeRequest_SendBody with the
 // rules defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -8536,651 +9014,6 @@ var _ interface {
 	ErrorName() string
 } = UserInfoReply_ListEthRecordTotalValidationError{}
 
-// Validate checks the field values on UserInfoReply_ListEthRecord with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *UserInfoReply_ListEthRecord) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on UserInfoReply_ListEthRecord with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// UserInfoReply_ListEthRecordMultiError, or nil if none found.
-func (m *UserInfoReply_ListEthRecord) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *UserInfoReply_ListEthRecord) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Amount
-
-	// no validation rules for CreatedAt
-
-	if len(errors) > 0 {
-		return UserInfoReply_ListEthRecordMultiError(errors)
-	}
-
-	return nil
-}
-
-// UserInfoReply_ListEthRecordMultiError is an error wrapping multiple
-// validation errors returned by UserInfoReply_ListEthRecord.ValidateAll() if
-// the designated constraints aren't met.
-type UserInfoReply_ListEthRecordMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m UserInfoReply_ListEthRecordMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m UserInfoReply_ListEthRecordMultiError) AllErrors() []error { return m }
-
-// UserInfoReply_ListEthRecordValidationError is the validation error returned
-// by UserInfoReply_ListEthRecord.Validate if the designated constraints
-// aren't met.
-type UserInfoReply_ListEthRecordValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e UserInfoReply_ListEthRecordValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e UserInfoReply_ListEthRecordValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e UserInfoReply_ListEthRecordValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e UserInfoReply_ListEthRecordValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e UserInfoReply_ListEthRecordValidationError) ErrorName() string {
-	return "UserInfoReply_ListEthRecordValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e UserInfoReply_ListEthRecordValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sUserInfoReply_ListEthRecord.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = UserInfoReply_ListEthRecordValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = UserInfoReply_ListEthRecordValidationError{}
-
-// Validate checks the field values on UserInfoReply_ListBuy with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *UserInfoReply_ListBuy) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on UserInfoReply_ListBuy with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// UserInfoReply_ListBuyMultiError, or nil if none found.
-func (m *UserInfoReply_ListBuy) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *UserInfoReply_ListBuy) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Amount
-
-	// no validation rules for CreatedAt
-
-	if len(errors) > 0 {
-		return UserInfoReply_ListBuyMultiError(errors)
-	}
-
-	return nil
-}
-
-// UserInfoReply_ListBuyMultiError is an error wrapping multiple validation
-// errors returned by UserInfoReply_ListBuy.ValidateAll() if the designated
-// constraints aren't met.
-type UserInfoReply_ListBuyMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m UserInfoReply_ListBuyMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m UserInfoReply_ListBuyMultiError) AllErrors() []error { return m }
-
-// UserInfoReply_ListBuyValidationError is the validation error returned by
-// UserInfoReply_ListBuy.Validate if the designated constraints aren't met.
-type UserInfoReply_ListBuyValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e UserInfoReply_ListBuyValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e UserInfoReply_ListBuyValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e UserInfoReply_ListBuyValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e UserInfoReply_ListBuyValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e UserInfoReply_ListBuyValidationError) ErrorName() string {
-	return "UserInfoReply_ListBuyValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e UserInfoReply_ListBuyValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sUserInfoReply_ListBuy.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = UserInfoReply_ListBuyValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = UserInfoReply_ListBuyValidationError{}
-
-// Validate checks the field values on UserInfoReply_ListWithdraw with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *UserInfoReply_ListWithdraw) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on UserInfoReply_ListWithdraw with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// UserInfoReply_ListWithdrawMultiError, or nil if none found.
-func (m *UserInfoReply_ListWithdraw) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *UserInfoReply_ListWithdraw) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Amount
-
-	// no validation rules for Address
-
-	// no validation rules for CreateAt
-
-	if len(errors) > 0 {
-		return UserInfoReply_ListWithdrawMultiError(errors)
-	}
-
-	return nil
-}
-
-// UserInfoReply_ListWithdrawMultiError is an error wrapping multiple
-// validation errors returned by UserInfoReply_ListWithdraw.ValidateAll() if
-// the designated constraints aren't met.
-type UserInfoReply_ListWithdrawMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m UserInfoReply_ListWithdrawMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m UserInfoReply_ListWithdrawMultiError) AllErrors() []error { return m }
-
-// UserInfoReply_ListWithdrawValidationError is the validation error returned
-// by UserInfoReply_ListWithdraw.Validate if the designated constraints aren't met.
-type UserInfoReply_ListWithdrawValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e UserInfoReply_ListWithdrawValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e UserInfoReply_ListWithdrawValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e UserInfoReply_ListWithdrawValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e UserInfoReply_ListWithdrawValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e UserInfoReply_ListWithdrawValidationError) ErrorName() string {
-	return "UserInfoReply_ListWithdrawValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e UserInfoReply_ListWithdrawValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sUserInfoReply_ListWithdraw.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = UserInfoReply_ListWithdrawValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = UserInfoReply_ListWithdrawValidationError{}
-
-// Validate checks the field values on UserInfoReply_ListExchange with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *UserInfoReply_ListExchange) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on UserInfoReply_ListExchange with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// UserInfoReply_ListExchangeMultiError, or nil if none found.
-func (m *UserInfoReply_ListExchange) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *UserInfoReply_ListExchange) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for AmountRaw
-
-	// no validation rules for AmountRsdt
-
-	// no validation rules for CreatedAt
-
-	if len(errors) > 0 {
-		return UserInfoReply_ListExchangeMultiError(errors)
-	}
-
-	return nil
-}
-
-// UserInfoReply_ListExchangeMultiError is an error wrapping multiple
-// validation errors returned by UserInfoReply_ListExchange.ValidateAll() if
-// the designated constraints aren't met.
-type UserInfoReply_ListExchangeMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m UserInfoReply_ListExchangeMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m UserInfoReply_ListExchangeMultiError) AllErrors() []error { return m }
-
-// UserInfoReply_ListExchangeValidationError is the validation error returned
-// by UserInfoReply_ListExchange.Validate if the designated constraints aren't met.
-type UserInfoReply_ListExchangeValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e UserInfoReply_ListExchangeValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e UserInfoReply_ListExchangeValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e UserInfoReply_ListExchangeValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e UserInfoReply_ListExchangeValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e UserInfoReply_ListExchangeValidationError) ErrorName() string {
-	return "UserInfoReply_ListExchangeValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e UserInfoReply_ListExchangeValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sUserInfoReply_ListExchange.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = UserInfoReply_ListExchangeValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = UserInfoReply_ListExchangeValidationError{}
-
-// Validate checks the field values on UserInfoReply_ListTo with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *UserInfoReply_ListTo) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on UserInfoReply_ListTo with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// UserInfoReply_ListToMultiError, or nil if none found.
-func (m *UserInfoReply_ListTo) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *UserInfoReply_ListTo) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Amount
-
-	// no validation rules for ToAddress
-
-	// no validation rules for ToType
-
-	// no validation rules for CreatedAt
-
-	if len(errors) > 0 {
-		return UserInfoReply_ListToMultiError(errors)
-	}
-
-	return nil
-}
-
-// UserInfoReply_ListToMultiError is an error wrapping multiple validation
-// errors returned by UserInfoReply_ListTo.ValidateAll() if the designated
-// constraints aren't met.
-type UserInfoReply_ListToMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m UserInfoReply_ListToMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m UserInfoReply_ListToMultiError) AllErrors() []error { return m }
-
-// UserInfoReply_ListToValidationError is the validation error returned by
-// UserInfoReply_ListTo.Validate if the designated constraints aren't met.
-type UserInfoReply_ListToValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e UserInfoReply_ListToValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e UserInfoReply_ListToValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e UserInfoReply_ListToValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e UserInfoReply_ListToValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e UserInfoReply_ListToValidationError) ErrorName() string {
-	return "UserInfoReply_ListToValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e UserInfoReply_ListToValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sUserInfoReply_ListTo.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = UserInfoReply_ListToValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = UserInfoReply_ListToValidationError{}
-
-// Validate checks the field values on UserInfoReply_ListStake with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *UserInfoReply_ListStake) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on UserInfoReply_ListStake with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// UserInfoReply_ListStakeMultiError, or nil if none found.
-func (m *UserInfoReply_ListStake) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *UserInfoReply_ListStake) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Amount
-
-	// no validation rules for CreatedAt
-
-	if len(errors) > 0 {
-		return UserInfoReply_ListStakeMultiError(errors)
-	}
-
-	return nil
-}
-
-// UserInfoReply_ListStakeMultiError is an error wrapping multiple validation
-// errors returned by UserInfoReply_ListStake.ValidateAll() if the designated
-// constraints aren't met.
-type UserInfoReply_ListStakeMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m UserInfoReply_ListStakeMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m UserInfoReply_ListStakeMultiError) AllErrors() []error { return m }
-
-// UserInfoReply_ListStakeValidationError is the validation error returned by
-// UserInfoReply_ListStake.Validate if the designated constraints aren't met.
-type UserInfoReply_ListStakeValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e UserInfoReply_ListStakeValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e UserInfoReply_ListStakeValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e UserInfoReply_ListStakeValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e UserInfoReply_ListStakeValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e UserInfoReply_ListStakeValidationError) ErrorName() string {
-	return "UserInfoReply_ListStakeValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e UserInfoReply_ListStakeValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sUserInfoReply_ListStake.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = UserInfoReply_ListStakeValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = UserInfoReply_ListStakeValidationError{}
-
 // Validate checks the field values on UserInfoReply_ListReward with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -9203,7 +9036,11 @@ func (m *UserInfoReply_ListReward) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Amount
+	// no validation rules for AmountRsdt
+
+	// no validation rules for AmountRaw
+
+	// no validation rules for Address
 
 	// no validation rules for RewardType
 
@@ -10397,6 +10234,8 @@ func (m *WithdrawRequest_SendBody) validate(all bool) error {
 	var errors []error
 
 	// no validation rules for Type
+
+	// no validation rules for AmountNew
 
 	// no validation rules for Amount
 
