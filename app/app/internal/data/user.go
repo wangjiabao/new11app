@@ -134,6 +134,7 @@ type UserBalance struct {
 	BalanceC            int64     `gorm:"type:bigint"`
 	AreaTotalFloat      float64   `gorm:"type:decimal(65,20);not null"`
 	AreaTotalFloatTwo   float64   `gorm:"type:decimal(65,20);not null"`
+	AreaTotalFloatThree float64   `gorm:"type:decimal(65,20);not null"`
 	RecommendTotalFloat float64   `gorm:"type:decimal(65,20);not null"`
 	LocationTotalFloat  float64   `gorm:"type:decimal(65,20);not null"`
 	BalanceUsdtFloat    float64   `gorm:"type:decimal(65,20);not null"`
@@ -404,7 +405,7 @@ func (u *UserRepo) UpdateUserRewardAreaTwo(ctx context.Context, userId int64, am
 
 	if err = u.data.DB(ctx).Table("user_balance").
 		Where("user_id=?", userId).
-		Updates(map[string]interface{}{"balance_usdt_float": gorm.Expr("balance_usdt_float + ?", amountUsdt), "area_two_total_float": gorm.Expr("area_two_total_float + ?", amountUsdt)}).Error; nil != err {
+		Updates(map[string]interface{}{"balance_usdt_float": gorm.Expr("balance_usdt_float + ?", amountUsdt), "area_total_float_two": gorm.Expr("area_total_float_two + ?", amountUsdt)}).Error; nil != err {
 		return 0, errors.NotFound("user balance err", "user balance not found")
 	}
 
@@ -1341,6 +1342,7 @@ func (ub UserBalanceRepo) GetUserBalance(ctx context.Context, userId int64) (*bi
 		LocationTotalFloat:  userBalance.LocationTotalFloat,
 		BalanceRawFloat:     userBalance.BalanceRawFloat,
 		BalanceUsdtFloat:    userBalance.BalanceUsdtFloat,
+		AreaTotalFloatThree: userBalance.AreaTotalFloatThree,
 	}, nil
 }
 
@@ -2928,6 +2930,39 @@ func (uc *UserCurrentMonthRecommendRepo) GetUserCurrentMonthRecommendGroupByUser
 	return res, nil, count
 }
 
+// GetUserRewardDeposit .
+func (ub *UserBalanceRepo) GetUserRewardDeposit(ctx context.Context, userId int64) ([]*biz.Reward, error) {
+	var rewards []*Reward
+	res := make([]*biz.Reward, 0)
+	if err := ub.data.db.Table("reward").Where("reason=?", "deposit").
+		Limit(100).Order("id desc").Find(&rewards).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return res, errors.NotFound("REWARD_NOT_FOUND", "reward not found")
+		}
+		return nil, errors.New(500, "REWARD ERROR", err.Error())
+	}
+
+	for _, reward := range rewards {
+		res = append(res, &biz.Reward{
+			ID:               reward.ID,
+			UserId:           reward.UserId,
+			Amount:           reward.Amount,
+			BalanceRecordId:  reward.BalanceRecordId,
+			Type:             reward.Type,
+			TypeRecordId:     reward.TypeRecordId,
+			Reason:           reward.Reason,
+			ReasonLocationId: reward.ReasonLocationId,
+			LocationType:     reward.LocationType,
+			CreatedAt:        reward.CreatedAt,
+			AmountB:          reward.AmountB,
+			AmountNew:        reward.AmountNew,
+			AmountNewTwo:     reward.AmountNewTwo,
+			Address:          reward.Address,
+		})
+	}
+	return res, nil
+}
+
 // GetUserRewardByUserId .
 func (ub *UserBalanceRepo) GetUserRewardByUserId(ctx context.Context, userId int64) ([]*biz.Reward, error) {
 	var rewards []*Reward
@@ -2955,6 +2990,7 @@ func (ub *UserBalanceRepo) GetUserRewardByUserId(ctx context.Context, userId int
 			AmountB:          reward.AmountB,
 			AmountNew:        reward.AmountNew,
 			AmountNewTwo:     reward.AmountNewTwo,
+			Address:          reward.Address,
 		})
 	}
 	return res, nil

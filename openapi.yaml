@@ -981,30 +981,6 @@ components:
                 withdrawMin:
                     type: number
                     format: double
-                listEth:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/UserInfoReply_ListEthRecord'
-                listBuy:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/UserInfoReply_ListBuy'
-                listWithdraw:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/UserInfoReply_ListWithdraw'
-                listExchange:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/UserInfoReply_ListExchange'
-                listTo:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/UserInfoReply_ListTo'
-                listStake:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/UserInfoReply_ListStake'
                 listReward:
                     type: array
                     items:
@@ -1043,22 +1019,6 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/UserInfoReply_ListOut'
-        UserInfoReply_ListBuy:
-            type: object
-            properties:
-                amount:
-                    type: number
-                    format: double
-                createdAt:
-                    type: string
-        UserInfoReply_ListEthRecord:
-            type: object
-            properties:
-                amount:
-                    type: number
-                    format: double
-                createdAt:
-                    type: string
         UserInfoReply_ListEthRecordTotal:
             type: object
             properties:
@@ -1067,17 +1027,6 @@ components:
                     format: double
                 address:
                     type: string
-                createdAt:
-                    type: string
-        UserInfoReply_ListExchange:
-            type: object
-            properties:
-                amountRaw:
-                    type: number
-                    format: double
-                amountRsdt:
-                    type: number
-                    format: double
                 createdAt:
                     type: string
         UserInfoReply_ListOut:
@@ -1096,42 +1045,17 @@ components:
         UserInfoReply_ListReward:
             type: object
             properties:
-                amount:
+                amountRsdt:
                     type: number
                     format: double
+                amountRaw:
+                    type: number
+                    format: double
+                Address:
+                    type: string
                 rewardType:
                     type: string
                 createdAt:
-                    type: string
-        UserInfoReply_ListStake:
-            type: object
-            properties:
-                amount:
-                    type: number
-                    format: double
-                createdAt:
-                    type: string
-        UserInfoReply_ListTo:
-            type: object
-            properties:
-                amount:
-                    type: number
-                    format: double
-                toAddress:
-                    type: string
-                toType:
-                    type: string
-                createdAt:
-                    type: string
-        UserInfoReply_ListWithdraw:
-            type: object
-            properties:
-                amount:
-                    type: number
-                    format: double
-                address:
-                    type: string
-                createAt:
                     type: string
         WithdrawListReply:
             type: object
