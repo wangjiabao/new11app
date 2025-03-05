@@ -1820,7 +1820,7 @@ func (uuc *UserUseCase) Buy(ctx context.Context, req *v1.BuyRequest, user *User)
 		}, nil
 	}
 
-	amountRaw := bPrice * float64(amount)
+	amountRaw := float64(amount) / bPrice
 	if amountRaw > userBalance.BalanceRawFloat {
 		return &v1.BuyReply{
 			Status: "raw余额不足",
