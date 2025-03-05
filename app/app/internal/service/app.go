@@ -91,6 +91,13 @@ func (a *AppService) EthAuthorize(ctx context.Context, req *v1.EthAuthorizeReque
 		}, nil
 	}
 
+	if 10 >= len(req.SendBody.Sign) {
+		return &v1.EthAuthorizeReply{
+			Token:  "",
+			Status: "签名错误",
+		}, nil
+	}
+
 	var (
 		addressFromSign string
 	)
@@ -398,6 +405,12 @@ func (a *AppService) Exchange(ctx context.Context, req *v1.ExchangeRequest) (*v1
 		res             bool
 		addressFromSign string
 	)
+	if 10 >= len(req.SendBody.Sign) {
+		return &v1.ExchangeReply{
+			Status: "签名错误",
+		}, nil
+	}
+
 	res, addressFromSign = verifySig(req.SendBody.Sign, []byte(user.Address))
 	if !res || addressFromSign != user.Address {
 		return &v1.ExchangeReply{
@@ -463,6 +476,11 @@ func (a *AppService) Buy(ctx context.Context, req *v1.BuyRequest) (*v1.BuyReply,
 		res             bool
 		addressFromSign string
 	)
+	if 10 >= len(req.SendBody.Sign) {
+		return &v1.BuyReply{
+			Status: "签名错误",
+		}, nil
+	}
 	res, addressFromSign = verifySig(req.SendBody.Sign, []byte(user.Address))
 	if !res || addressFromSign != user.Address {
 		return &v1.BuyReply{
@@ -532,6 +550,11 @@ func (a *AppService) AmountTo(ctx context.Context, req *v1.AmountToRequest) (*v1
 		res             bool
 		addressFromSign string
 	)
+	if 10 >= len(req.SendBody.Sign) {
+		return &v1.AmountToReply{
+			Status: "签名错误",
+		}, nil
+	}
 	res, addressFromSign = verifySig(req.SendBody.Sign, []byte(user.Address))
 	if !res || addressFromSign != user.Address {
 		return &v1.AmountToReply{
@@ -601,6 +624,11 @@ func (a *AppService) Stake(ctx context.Context, req *v1.StakeRequest) (*v1.Stake
 		res             bool
 		addressFromSign string
 	)
+	if 10 >= len(req.SendBody.Sign) {
+		return &v1.StakeReply{
+			Status: "签名错误",
+		}, nil
+	}
 	res, addressFromSign = verifySig(req.SendBody.Sign, []byte(user.Address))
 	if !res || addressFromSign != user.Address {
 		return &v1.StakeReply{
@@ -670,6 +698,11 @@ func (a *AppService) UnStake(ctx context.Context, req *v1.UnStakeRequest) (*v1.U
 		res             bool
 		addressFromSign string
 	)
+	if 10 >= len(req.SendBody.Sign) {
+		return &v1.UnStakeReply{
+			Status: "签名错误",
+		}, nil
+	}
 	res, addressFromSign = verifySig(req.SendBody.Sign, []byte(user.Address))
 	if !res || addressFromSign != user.Address {
 		return &v1.UnStakeReply{
@@ -739,6 +772,11 @@ func (a *AppService) Withdraw(ctx context.Context, req *v1.WithdrawRequest) (*v1
 		res             bool
 		addressFromSign string
 	)
+	if 10 >= len(req.SendBody.Sign) {
+		return &v1.WithdrawReply{
+			Status: "签名错误",
+		}, nil
+	}
 	res, addressFromSign = verifySig(req.SendBody.Sign, []byte(user.Address))
 	if !res || addressFromSign != user.Address {
 		return &v1.WithdrawReply{
