@@ -46,6 +46,7 @@ const (
 	App_Buy_FullMethodName                 = "/api.App/Buy"
 	App_AmountTo_FullMethodName            = "/api.App/AmountTo"
 	App_Stake_FullMethodName               = "/api.App/Stake"
+	App_UnStake_FullMethodName             = "/api.App/UnStake"
 )
 
 // AppClient is the client API for App service.
@@ -102,6 +103,7 @@ type AppClient interface {
 	Buy(ctx context.Context, in *BuyRequest, opts ...grpc.CallOption) (*BuyReply, error)
 	AmountTo(ctx context.Context, in *AmountToRequest, opts ...grpc.CallOption) (*AmountToReply, error)
 	Stake(ctx context.Context, in *StakeRequest, opts ...grpc.CallOption) (*StakeReply, error)
+	UnStake(ctx context.Context, in *UnStakeRequest, opts ...grpc.CallOption) (*UnStakeReply, error)
 }
 
 type appClient struct {
@@ -355,6 +357,15 @@ func (c *appClient) Stake(ctx context.Context, in *StakeRequest, opts ...grpc.Ca
 	return out, nil
 }
 
+func (c *appClient) UnStake(ctx context.Context, in *UnStakeRequest, opts ...grpc.CallOption) (*UnStakeReply, error) {
+	out := new(UnStakeReply)
+	err := c.cc.Invoke(ctx, App_UnStake_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AppServer is the server API for App service.
 // All implementations must embed UnimplementedAppServer
 // for forward compatibility
@@ -409,6 +420,7 @@ type AppServer interface {
 	Buy(context.Context, *BuyRequest) (*BuyReply, error)
 	AmountTo(context.Context, *AmountToRequest) (*AmountToReply, error)
 	Stake(context.Context, *StakeRequest) (*StakeReply, error)
+	UnStake(context.Context, *UnStakeRequest) (*UnStakeReply, error)
 	mustEmbedUnimplementedAppServer()
 }
 
@@ -496,6 +508,9 @@ func (UnimplementedAppServer) AmountTo(context.Context, *AmountToRequest) (*Amou
 }
 func (UnimplementedAppServer) Stake(context.Context, *StakeRequest) (*StakeReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Stake not implemented")
+}
+func (UnimplementedAppServer) UnStake(context.Context, *UnStakeRequest) (*UnStakeReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UnStake not implemented")
 }
 func (UnimplementedAppServer) mustEmbedUnimplementedAppServer() {}
 
@@ -996,6 +1011,24 @@ func _App_Stake_Handler(srv interface{}, ctx context.Context, dec func(interface
 	return interceptor(ctx, in, info, handler)
 }
 
+func _App_UnStake_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnStakeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppServer).UnStake(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: App_UnStake_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppServer).UnStake(ctx, req.(*UnStakeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // App_ServiceDesc is the grpc.ServiceDesc for App service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1110,6 +1143,10 @@ var App_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Stake",
 			Handler:    _App_Stake_Handler,
+		},
+		{
+			MethodName: "UnStake",
+			Handler:    _App_UnStake_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

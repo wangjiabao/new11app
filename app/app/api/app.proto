@@ -381,6 +381,7 @@ message UserInfoReply {
 	double exchangeRate = 6; // 兑换手续费
 	double balanceRaw = 2; // raw余额
 	double balanceUsdt = 3; // rsdt余额
+	double balanceKsdt = 30; // rsdt余额
 	double withdrawMax = 52; // 最大提现金额
 	double withdrawMin = 53; // 最小提现金额
 

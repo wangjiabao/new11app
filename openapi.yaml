@@ -1013,6 +1013,9 @@ components:
                 balanceUsdt:
                     type: number
                     format: double
+                balanceKsdt:
+                    type: number
+                    format: double
                 withdrawMax:
                     type: number
                     format: double
