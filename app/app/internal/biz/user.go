@@ -964,22 +964,22 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 	num := float64(1)
 	todayTotal := float64(0)
 	if 1 == myUser.Last {
-		num = 2
+		num = 1.5
 		todayTotal = myUser.AmountUsdt * level1
 	} else if 2 == myUser.Last {
-		num = 2.3
+		num = 1.8
 		todayTotal = myUser.AmountUsdt * level2
 	} else if 3 == myUser.Last {
-		num = 2.6
+		num = 2
 		todayTotal = myUser.AmountUsdt * level3
 	} else if 4 == myUser.Last {
-		num = 3
+		num = 2.3
 		todayTotal = myUser.AmountUsdt * level4
 	} else if 5 == myUser.Last {
-		num = 1.5
+		num = 2.6
 		todayTotal = myUser.AmountUsdt * level5
 	} else if 6 == myUser.Last {
-		num = 1.8
+		num = 3
 		todayTotal = myUser.AmountUsdt * level6
 	}
 
@@ -1985,17 +1985,17 @@ func (uuc *UserUseCase) EthUserRecordHandle(ctx context.Context, amount uint64, 
 		last := uint64(0)
 		newAmountUsdt := usersMap[v.UserId].AmountUsdt + float64(amount)
 		if 300 <= newAmountUsdt && newAmountUsdt < 500 {
-			last = 5
-		} else if 500 <= newAmountUsdt && newAmountUsdt < 1000 {
-			last = 6
-		} else if 1000 <= newAmountUsdt && newAmountUsdt < 5000 {
 			last = 1
-		} else if 5000 <= newAmountUsdt && newAmountUsdt < 30000 {
+		} else if 500 <= newAmountUsdt && newAmountUsdt < 1000 {
 			last = 2
-		} else if 30000 <= newAmountUsdt && newAmountUsdt < 100000 {
+		} else if 1000 <= newAmountUsdt && newAmountUsdt < 5000 {
 			last = 3
-		} else if 100000 <= newAmountUsdt {
+		} else if 5000 <= newAmountUsdt && newAmountUsdt < 30000 {
 			last = 4
+		} else if 30000 <= newAmountUsdt && newAmountUsdt < 100000 {
+			last = 5
+		} else if 100000 <= newAmountUsdt {
+			last = 6
 		} else {
 			fmt.Println("认购信息无效", v, usersMap[v.UserId])
 			continue
@@ -2164,17 +2164,17 @@ func (uuc *UserUseCase) EthUserRecordHandle(ctx context.Context, amount uint64, 
 					num       float64
 				)
 				if 1 == tmpRecommendUser.Last {
-					num = 2
-				} else if 2 == tmpRecommendUser.Last {
-					num = 2.3
-				} else if 3 == tmpRecommendUser.Last {
-					num = 2.6
-				} else if 4 == tmpRecommendUser.Last {
-					num = 3
-				} else if 5 == tmpRecommendUser.Last {
 					num = 1.5
-				} else if 6 == tmpRecommendUser.Last {
+				} else if 2 == tmpRecommendUser.Last {
 					num = 1.8
+				} else if 3 == tmpRecommendUser.Last {
+					num = 2
+				} else if 4 == tmpRecommendUser.Last {
+					num = 2.3
+				} else if 5 == tmpRecommendUser.Last {
+					num = 2.6
+				} else if 6 == tmpRecommendUser.Last {
+					num = 3
 				} else {
 					continue
 				}
