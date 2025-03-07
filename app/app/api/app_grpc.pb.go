@@ -29,7 +29,7 @@ const (
 	App_WithdrawList_FullMethodName        = "/api.App/WithdrawList"
 	App_TradeList_FullMethodName           = "/api.App/TradeList"
 	App_TranList_FullMethodName            = "/api.App/TranList"
-	App_RecommendList_FullMethodName       = "/api.App/RecommendList"
+	App_UserRecommend_FullMethodName       = "/api.App/UserRecommend"
 	App_PasswordChange_FullMethodName      = "/api.App/PasswordChange"
 	App_Withdraw_FullMethodName            = "/api.App/Withdraw"
 	App_Exchange_FullMethodName            = "/api.App/Exchange"
@@ -63,7 +63,7 @@ type AppClient interface {
 	WithdrawList(ctx context.Context, in *WithdrawListRequest, opts ...grpc.CallOption) (*WithdrawListReply, error)
 	TradeList(ctx context.Context, in *TradeListRequest, opts ...grpc.CallOption) (*TradeListReply, error)
 	TranList(ctx context.Context, in *TranListRequest, opts ...grpc.CallOption) (*TranListReply, error)
-	RecommendList(ctx context.Context, in *RecommendListRequest, opts ...grpc.CallOption) (*RecommendListReply, error)
+	UserRecommend(ctx context.Context, in *RecommendListRequest, opts ...grpc.CallOption) (*RecommendListReply, error)
 	PasswordChange(ctx context.Context, in *PasswordChangeRequest, opts ...grpc.CallOption) (*PasswordChangeReply, error)
 	Withdraw(ctx context.Context, in *WithdrawRequest, opts ...grpc.CallOption) (*WithdrawReply, error)
 	Exchange(ctx context.Context, in *ExchangeRequest, opts ...grpc.CallOption) (*ExchangeReply, error)
@@ -204,9 +204,9 @@ func (c *appClient) TranList(ctx context.Context, in *TranListRequest, opts ...g
 	return out, nil
 }
 
-func (c *appClient) RecommendList(ctx context.Context, in *RecommendListRequest, opts ...grpc.CallOption) (*RecommendListReply, error) {
+func (c *appClient) UserRecommend(ctx context.Context, in *RecommendListRequest, opts ...grpc.CallOption) (*RecommendListReply, error) {
 	out := new(RecommendListReply)
-	err := c.cc.Invoke(ctx, App_RecommendList_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, App_UserRecommend_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -380,7 +380,7 @@ type AppServer interface {
 	WithdrawList(context.Context, *WithdrawListRequest) (*WithdrawListReply, error)
 	TradeList(context.Context, *TradeListRequest) (*TradeListReply, error)
 	TranList(context.Context, *TranListRequest) (*TranListReply, error)
-	RecommendList(context.Context, *RecommendListRequest) (*RecommendListReply, error)
+	UserRecommend(context.Context, *RecommendListRequest) (*RecommendListReply, error)
 	PasswordChange(context.Context, *PasswordChangeRequest) (*PasswordChangeReply, error)
 	Withdraw(context.Context, *WithdrawRequest) (*WithdrawReply, error)
 	Exchange(context.Context, *ExchangeRequest) (*ExchangeReply, error)
@@ -458,8 +458,8 @@ func (UnimplementedAppServer) TradeList(context.Context, *TradeListRequest) (*Tr
 func (UnimplementedAppServer) TranList(context.Context, *TranListRequest) (*TranListReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TranList not implemented")
 }
-func (UnimplementedAppServer) RecommendList(context.Context, *RecommendListRequest) (*RecommendListReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RecommendList not implemented")
+func (UnimplementedAppServer) UserRecommend(context.Context, *RecommendListRequest) (*RecommendListReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UserRecommend not implemented")
 }
 func (UnimplementedAppServer) PasswordChange(context.Context, *PasswordChangeRequest) (*PasswordChangeReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PasswordChange not implemented")
@@ -705,20 +705,20 @@ func _App_TranList_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
-func _App_RecommendList_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _App_UserRecommend_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RecommendListRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AppServer).RecommendList(ctx, in)
+		return srv.(AppServer).UserRecommend(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: App_RecommendList_FullMethodName,
+		FullMethod: App_UserRecommend_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AppServer).RecommendList(ctx, req.(*RecommendListRequest))
+		return srv.(AppServer).UserRecommend(ctx, req.(*RecommendListRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -1077,8 +1077,8 @@ var App_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _App_TranList_Handler,
 		},
 		{
-			MethodName: "RecommendList",
-			Handler:    _App_RecommendList_Handler,
+			MethodName: "UserRecommend",
+			Handler:    _App_UserRecommend_Handler,
 		},
 		{
 			MethodName: "PasswordChange",

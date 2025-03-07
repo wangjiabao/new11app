@@ -72,7 +72,7 @@ service App {
 		};
 	};
 
-	rpc RecommendList (RecommendListRequest) returns (RecommendListReply) {
+	rpc UserRecommend (RecommendListRequest) returns (RecommendListReply) {
 		option (google.api.http) = {
 			get: "/api/app_server/recommend_list"
 		};

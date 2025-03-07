@@ -31,7 +31,6 @@ const OperationAppExchange = "/api.App/Exchange"
 const OperationAppFeeRewardList = "/api.App/FeeRewardList"
 const OperationAppGetTrade = "/api.App/GetTrade"
 const OperationAppPasswordChange = "/api.App/PasswordChange"
-const OperationAppRecommendList = "/api.App/RecommendList"
 const OperationAppRecommendRewardList = "/api.App/RecommendRewardList"
 const OperationAppRecommendUpdate = "/api.App/RecommendUpdate"
 const OperationAppRewardList = "/api.App/RewardList"
@@ -45,6 +44,7 @@ const OperationAppTranList = "/api.App/TranList"
 const OperationAppUnStake = "/api.App/UnStake"
 const OperationAppUserArea = "/api.App/UserArea"
 const OperationAppUserInfo = "/api.App/UserInfo"
+const OperationAppUserRecommend = "/api.App/UserRecommend"
 const OperationAppWithdraw = "/api.App/Withdraw"
 const OperationAppWithdrawList = "/api.App/WithdrawList"
 
@@ -86,7 +86,6 @@ type AppHTTPServer interface {
 	FeeRewardList(context.Context, *FeeRewardListRequest) (*FeeRewardListReply, error)
 	GetTrade(context.Context, *GetTradeRequest) (*GetTradeReply, error)
 	PasswordChange(context.Context, *PasswordChangeRequest) (*PasswordChangeReply, error)
-	RecommendList(context.Context, *RecommendListRequest) (*RecommendListReply, error)
 	RecommendRewardList(context.Context, *RecommendRewardListRequest) (*RecommendRewardListReply, error)
 	RecommendUpdate(context.Context, *RecommendUpdateRequest) (*RecommendUpdateReply, error)
 	RewardList(context.Context, *RewardListRequest) (*RewardListReply, error)
@@ -100,6 +99,7 @@ type AppHTTPServer interface {
 	UnStake(context.Context, *UnStakeRequest) (*UnStakeReply, error)
 	UserArea(context.Context, *UserAreaRequest) (*UserAreaReply, error)
 	UserInfo(context.Context, *UserInfoRequest) (*UserInfoReply, error)
+	UserRecommend(context.Context, *RecommendListRequest) (*RecommendListReply, error)
 	Withdraw(context.Context, *WithdrawRequest) (*WithdrawReply, error)
 	WithdrawList(context.Context, *WithdrawListRequest) (*WithdrawListReply, error)
 }
@@ -116,7 +116,7 @@ func RegisterAppHTTPServer(s *http.Server, srv AppHTTPServer) {
 	r.GET("/api/app_server/withdraw_list", _App_WithdrawList0_HTTP_Handler(srv))
 	r.GET("/api/app_server/trade_list", _App_TradeList0_HTTP_Handler(srv))
 	r.GET("/api/app_server/tran_list", _App_TranList0_HTTP_Handler(srv))
-	r.GET("/api/app_server/recommend_list", _App_RecommendList0_HTTP_Handler(srv))
+	r.GET("/api/app_server/recommend_list", _App_UserRecommend0_HTTP_Handler(srv))
 	r.POST("/api/app_server/password_change", _App_PasswordChange0_HTTP_Handler(srv))
 	r.POST("/api/app_server/withdraw", _App_Withdraw0_HTTP_Handler(srv))
 	r.POST("/api/app_server/exchange", _App_Exchange0_HTTP_Handler(srv))
@@ -332,15 +332,15 @@ func _App_TranList0_HTTP_Handler(srv AppHTTPServer) func(ctx http.Context) error
 	}
 }
 
-func _App_RecommendList0_HTTP_Handler(srv AppHTTPServer) func(ctx http.Context) error {
+func _App_UserRecommend0_HTTP_Handler(srv AppHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in RecommendListRequest
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationAppRecommendList)
+		http.SetOperation(ctx, OperationAppUserRecommend)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.RecommendList(ctx, req.(*RecommendListRequest))
+			return srv.UserRecommend(ctx, req.(*RecommendListRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
@@ -723,7 +723,6 @@ type AppHTTPClient interface {
 	FeeRewardList(ctx context.Context, req *FeeRewardListRequest, opts ...http.CallOption) (rsp *FeeRewardListReply, err error)
 	GetTrade(ctx context.Context, req *GetTradeRequest, opts ...http.CallOption) (rsp *GetTradeReply, err error)
 	PasswordChange(ctx context.Context, req *PasswordChangeRequest, opts ...http.CallOption) (rsp *PasswordChangeReply, err error)
-	RecommendList(ctx context.Context, req *RecommendListRequest, opts ...http.CallOption) (rsp *RecommendListReply, err error)
 	RecommendRewardList(ctx context.Context, req *RecommendRewardListRequest, opts ...http.CallOption) (rsp *RecommendRewardListReply, err error)
 	RecommendUpdate(ctx context.Context, req *RecommendUpdateRequest, opts ...http.CallOption) (rsp *RecommendUpdateReply, err error)
 	RewardList(ctx context.Context, req *RewardListRequest, opts ...http.CallOption) (rsp *RewardListReply, err error)
@@ -737,6 +736,7 @@ type AppHTTPClient interface {
 	UnStake(ctx context.Context, req *UnStakeRequest, opts ...http.CallOption) (rsp *UnStakeReply, err error)
 	UserArea(ctx context.Context, req *UserAreaRequest, opts ...http.CallOption) (rsp *UserAreaReply, err error)
 	UserInfo(ctx context.Context, req *UserInfoRequest, opts ...http.CallOption) (rsp *UserInfoReply, err error)
+	UserRecommend(ctx context.Context, req *RecommendListRequest, opts ...http.CallOption) (rsp *RecommendListReply, err error)
 	Withdraw(ctx context.Context, req *WithdrawRequest, opts ...http.CallOption) (rsp *WithdrawReply, err error)
 	WithdrawList(ctx context.Context, req *WithdrawListRequest, opts ...http.CallOption) (rsp *WithdrawListReply, err error)
 }
@@ -905,19 +905,6 @@ func (c *AppHTTPClientImpl) PasswordChange(ctx context.Context, in *PasswordChan
 	return &out, err
 }
 
-func (c *AppHTTPClientImpl) RecommendList(ctx context.Context, in *RecommendListRequest, opts ...http.CallOption) (*RecommendListReply, error) {
-	var out RecommendListReply
-	pattern := "/api/app_server/recommend_list"
-	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation(OperationAppRecommendList))
-	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &out, err
-}
-
 func (c *AppHTTPClientImpl) RecommendRewardList(ctx context.Context, in *RecommendRewardListRequest, opts ...http.CallOption) (*RecommendRewardListReply, error) {
 	var out RecommendRewardListReply
 	pattern := "/api/app_server/recommend_reward_list"
@@ -1079,6 +1066,19 @@ func (c *AppHTTPClientImpl) UserInfo(ctx context.Context, in *UserInfoRequest, o
 	pattern := "/api/app_server/user_info"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationAppUserInfo))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *AppHTTPClientImpl) UserRecommend(ctx context.Context, in *RecommendListRequest, opts ...http.CallOption) (*RecommendListReply, error) {
+	var out RecommendListReply
+	pattern := "/api/app_server/recommend_list"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationAppUserRecommend))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {

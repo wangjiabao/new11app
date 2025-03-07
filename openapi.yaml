@@ -292,7 +292,7 @@ paths:
         get:
             tags:
                 - App
-            operationId: App_RecommendList
+            operationId: App_UserRecommend
             parameters:
                 - name: address
                   in: query
