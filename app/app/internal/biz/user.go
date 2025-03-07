@@ -1875,12 +1875,13 @@ func (uuc *UserUseCase) Buy(ctx context.Context, req *v1.BuyRequest, user *User)
 
 	var (
 		res bool
+		msg string
 	)
-	res, err = uuc.EthUserRecordHandle(ctx, amount, amountRaw, amountKsdt, coinType, notExistDepositResult...)
+	res, err, msg = uuc.EthUserRecordHandle(ctx, amount, amountRaw, amountKsdt, coinType, notExistDepositResult...)
 	if !res || nil != err {
 		fmt.Println(err)
 		return &v1.BuyReply{
-			Status: "认购错误",
+			Status: msg,
 		}, nil
 	}
 
@@ -1889,7 +1890,7 @@ func (uuc *UserUseCase) Buy(ctx context.Context, req *v1.BuyRequest, user *User)
 	}, nil
 }
 
-func (uuc *UserUseCase) EthUserRecordHandle(ctx context.Context, amount uint64, amountRaw float64, amountKsdt float64, coinType string, ethUserRecord ...*EthUserRecord) (bool, error) {
+func (uuc *UserUseCase) EthUserRecordHandle(ctx context.Context, amount uint64, amountRaw float64, amountKsdt float64, coinType string, ethUserRecord ...*EthUserRecord) (bool, error, string) {
 
 	var (
 		err            error
@@ -1929,7 +1930,7 @@ func (uuc *UserUseCase) EthUserRecordHandle(ctx context.Context, amount uint64, 
 	userRecommends, err = uuc.urRepo.GetUserRecommends(ctx)
 	if nil != err {
 		fmt.Println("今认购用户获取失败2")
-		return false, err
+		return false, err, "错误"
 	}
 
 	myLowUser := make(map[int64][]*UserRecommend, 0)
@@ -1967,7 +1968,7 @@ func (uuc *UserUseCase) EthUserRecordHandle(ctx context.Context, amount uint64, 
 	users, err = uuc.repo.GetAllUsers(ctx)
 	if nil == users {
 		fmt.Println("认购用户获取失败")
-		return false, nil
+		return false, nil, "错误"
 	}
 
 	usersMap = make(map[int64]*User, 0)
@@ -1997,8 +1998,7 @@ func (uuc *UserUseCase) EthUserRecordHandle(ctx context.Context, amount uint64, 
 		} else if 100000 <= newAmountUsdt {
 			last = 6
 		} else {
-			fmt.Println("认购信息无效", v, usersMap[v.UserId])
-			continue
+			return false, nil, "认购金额不足最低值"
 		}
 
 		if err = uuc.tx.ExecTx(ctx, func(ctx context.Context) error { // 事务
@@ -2017,7 +2017,7 @@ func (uuc *UserUseCase) EthUserRecordHandle(ctx context.Context, amount uint64, 
 			return nil
 		}); nil != err {
 			fmt.Println(err, "错误投资3", v)
-			return false, err
+			return false, err, "错误"
 		}
 
 		// 推荐人
@@ -2068,7 +2068,7 @@ func (uuc *UserUseCase) EthUserRecordHandle(ctx context.Context, amount uint64, 
 				return nil
 			}); nil != err {
 				fmt.Println(err, "错误投资2", v)
-				return false, err
+				continue
 			}
 
 			tmpRecommendUser := usersMap[tmpUserId]
@@ -2242,7 +2242,7 @@ func (uuc *UserUseCase) EthUserRecordHandle(ctx context.Context, amount uint64, 
 		}
 	}
 
-	return true, nil
+	return true, nil, ""
 }
 
 // Exchange Exchange.
