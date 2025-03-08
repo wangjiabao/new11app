@@ -2133,16 +2133,16 @@ func (uuc *UserUseCase) EthUserRecordHandle(ctx context.Context, amount uint64, 
 			}
 
 			tmpLastLevelNum := float64(0)
-			if 100000 <= tmpAreaMin && 300000 < tmpAreaMin {
+			if 100000 <= tmpAreaMin && 300000 > tmpAreaMin {
 				currentLevel = 4
 				tmpLastLevelNum = va4
-			} else if 300000 <= tmpAreaMin && 1000000 < tmpAreaMin {
+			} else if 300000 <= tmpAreaMin && 1000000 > tmpAreaMin {
 				currentLevel = 5
 				tmpLastLevelNum = va5
-			} else if 1000000 <= tmpAreaMin && 3000000 < tmpAreaMin {
+			} else if 1000000 <= tmpAreaMin && 3000000 > tmpAreaMin {
 				currentLevel = 6
 				tmpLastLevelNum = va6
-			} else if 3000000 <= tmpAreaMin && 10000000 < tmpAreaMin {
+			} else if 3000000 <= tmpAreaMin && 10000000 > tmpAreaMin {
 				currentLevel = 7
 				tmpLastLevelNum = va7
 			} else if 10000000 <= tmpAreaMin {
