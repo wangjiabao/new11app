@@ -2105,8 +2105,8 @@ func (uuc *UserUseCase) EthUserRecordHandle(ctx context.Context, amount uint64, 
 					continue
 				}
 
-				if tmpAreaMax < usersMap[vMyLowUser.UserId].MyTotalAmount {
-					tmpAreaMax = usersMap[vMyLowUser.UserId].MyTotalAmount
+				if tmpAreaMax < usersMap[vMyLowUser.UserId].MyTotalAmount+usersMap[vMyLowUser.UserId].AmountUsdt {
+					tmpAreaMax = usersMap[vMyLowUser.UserId].MyTotalAmount + usersMap[vMyLowUser.UserId].AmountUsdt
 					tmpMaxId = vMyLowUser.UserId
 				}
 			}
@@ -2118,7 +2118,7 @@ func (uuc *UserUseCase) EthUserRecordHandle(ctx context.Context, amount uint64, 
 			tmpAreaMin := float64(0)
 			for _, vMyLowUser := range myLowUser[tmpUserId] {
 				if tmpMaxId != vMyLowUser.UserId {
-					tmpAreaMin += usersMap[vMyLowUser.UserId].MyTotalAmount
+					tmpAreaMin += usersMap[vMyLowUser.UserId].MyTotalAmount + usersMap[vMyLowUser.UserId].AmountUsdt
 				}
 			}
 
