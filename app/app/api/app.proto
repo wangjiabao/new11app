@@ -409,7 +409,7 @@ message UserInfoReply {
 	double areaMin = 47; // 小区业绩
 	double recommendTotal = 48; // 直推业绩
 	double balanceKsdt = 30; // rsdt余额
-
+	double areaTotal  = 50; // 总业绩
 	repeated ListOut listOut = 135; // 收益记录
 	message ListOut {
 		double amount = 1; // rsdt金额

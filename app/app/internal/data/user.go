@@ -495,7 +495,7 @@ func (u *UserRepo) UpdateUserRewardAreaTwo(ctx context.Context, userId int64, am
 func (u *UserRepo) UpdateUserNewTwoNew(ctx context.Context, userId int64, amountUsdt float64, last uint64, amountRawFloat float64, coinType string) error {
 	if "RAW" == coinType {
 		res := u.data.DB(ctx).Table("user").Where("id=?", userId).
-			Updates(map[string]interface{}{"amount_usdt": gorm.Expr("amount_usdt + ?", amountUsdt), "last": last})
+			Updates(map[string]interface{}{"amount_usdt": gorm.Expr("amount_usdt + ?", amountUsdt), "last": last, "updated_at": time.Now().Format("2006-01-02 15:04:05")})
 		if res.Error != nil {
 			return errors.New(500, "UPDATE_USER_ERROR", "用户信息修改失败")
 		}
@@ -508,7 +508,7 @@ func (u *UserRepo) UpdateUserNewTwoNew(ctx context.Context, userId int64, amount
 
 	} else if "KSDT" == coinType {
 		res := u.data.DB(ctx).Table("user").Where("id=?", userId).
-			Updates(map[string]interface{}{"amount_usdt": gorm.Expr("amount_usdt + ?", amountUsdt), "last": last})
+			Updates(map[string]interface{}{"amount_usdt": gorm.Expr("amount_usdt + ?", amountUsdt), "last": last, "updated_at": time.Now().Format("2006-01-02 15:04:05")})
 		if res.Error != nil {
 			return errors.New(500, "UPDATE_USER_ERROR", "用户信息修改失败")
 		}
@@ -676,6 +676,7 @@ func (u *UserRepo) GetUserById(ctx context.Context, Id int64) (*biz.User, error)
 		MyTotalAmount:          user.MyTotalAmount,
 		AmountUsdtGet:          user.AmountUsdtGet,
 		AmountRecommendUsdtGet: user.AmountRecommendUsdtGet,
+		UpdatedAt:              user.UpdatedAt,
 		Last:                   user.Last,
 	}, nil
 }
@@ -3157,7 +3158,7 @@ func (ub *UserBalanceRepo) GetUserRewardDeposit(ctx context.Context, userId int6
 func (ub *UserBalanceRepo) GetUserRewardByUserId(ctx context.Context, userId int64) ([]*biz.Reward, error) {
 	var rewards []*Reward
 	res := make([]*biz.Reward, 0)
-	if err := ub.data.db.Where("user_id", userId).Table("reward").Limit(5000).Order("id desc").Find(&rewards).Error; err != nil {
+	if err := ub.data.db.Where("user_id", userId).Table("reward").Limit(10000).Order("id desc").Find(&rewards).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return res, errors.NotFound("REWARD_NOT_FOUND", "reward not found")
 		}

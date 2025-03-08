@@ -33,6 +33,7 @@ type User struct {
 	RecommendLevel         int64
 	Out                    int64
 	CreatedAt              time.Time
+	UpdatedAt              time.Time
 	Lock                   int64
 	AmountUsdt             float64
 	MyTotalAmount          float64
@@ -727,26 +728,49 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 		myCode = userRecommend.RecommendCode + myCode
 	}
 	// 分红
-	var (
-		userRewardsTwo []*Reward
-	)
+	//var (
+	//	userRewardsTwo []*Reward
+	//)
 
 	listEth := make([]*v1.UserInfoReply_ListEthRecordTotal, 0)
-	userRewardsTwo, err = uuc.ubRepo.GetUserRewardByUserId(ctx, myUser.ID)
-	if nil != userRewardsTwo {
-		for _, vUserReward := range userRewardsTwo {
-			address := ""
-			if _, ok := usersMap[vUserReward.UserId]; ok {
-				address = usersMap[vUserReward.UserId].Address
-			}
+	//userRewardsTwo, err = uuc.ubRepo.GetUserRewardByUserId(ctx, myUser.ID)
+	//if nil != userRewardsTwo {
+	//	for _, vUserReward := range userRewardsTwo {
+	//		address := ""
+	//		if _, ok := usersMap[vUserReward.UserId]; ok {
+	//			address = usersMap[vUserReward.UserId].Address
+	//		}
+	//
+	//		listEth = append(listEth, &v1.UserInfoReply_ListEthRecordTotal{
+	//			Amount:    vUserReward.AmountNew,
+	//			Address:   address,
+	//			CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
+	//		})
+	//	}
+	//}
 
-			listEth = append(listEth, &v1.UserInfoReply_ListEthRecordTotal{
-				Amount:    vUserReward.AmountNew,
-				Address:   address,
-				CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
-			})
-		}
+	num := float64(1)
+	todayTotal := float64(0)
+	if 1 == myUser.Last {
+		num = 1.5
+		todayTotal = myUser.AmountUsdt * level1
+	} else if 2 == myUser.Last {
+		num = 1.8
+		todayTotal = myUser.AmountUsdt * level2
+	} else if 3 == myUser.Last {
+		num = 2
+		todayTotal = myUser.AmountUsdt * level3
+	} else if 4 == myUser.Last {
+		num = 2.3
+		todayTotal = myUser.AmountUsdt * level4
+	} else if 5 == myUser.Last {
+		num = 2.6
+		todayTotal = myUser.AmountUsdt * level5
+	} else if 6 == myUser.Last {
+		num = 3
+		todayTotal = myUser.AmountUsdt * level6
 	}
+
 	// 分红
 	var (
 		userRewards []*Reward
@@ -754,6 +778,16 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 
 	listReward := make([]*v1.UserInfoReply_ListReward, 0)
 	listOut := make([]*v1.UserInfoReply_ListOut, 0)
+	if 0 < myUser.AmountUsdt {
+		listOut = append(listOut, &v1.UserInfoReply_ListOut{
+			Amount:    myUser.AmountUsdt,
+			Level:     num,
+			Status:    1,
+			AmountGet: myUser.AmountUsdtGet,
+			CreatedAt: myUser.UpdatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
+		})
+	}
+
 	userRewards, err = uuc.ubRepo.GetUserRewardByUserId(ctx, myUser.ID)
 	if nil != userRewards {
 		for _, vUserReward := range userRewards {
@@ -834,28 +868,28 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 				})
 			} else if "out" == vUserReward.Reason {
 				newAmountUsdt := vUserReward.AmountNew
-				num := float64(1)
+				numTmp := float64(1)
 				if 300 <= newAmountUsdt && newAmountUsdt < 500 {
-					num = 1.5
+					numTmp = 1.5
 				} else if 500 <= newAmountUsdt && newAmountUsdt < 1000 {
-					num = 1.8
+					numTmp = 1.8
 				} else if 1000 <= newAmountUsdt && newAmountUsdt < 5000 {
-					num = 2
+					numTmp = 2
 				} else if 5000 <= newAmountUsdt && newAmountUsdt < 30000 {
-					num = 2.3
+					numTmp = 2.3
 				} else if 30000 <= newAmountUsdt && newAmountUsdt < 100000 {
-					num = 2.6
+					numTmp = 2.6
 				} else if 100000 <= newAmountUsdt {
-					num = 3
+					numTmp = 3
 				} else {
 					continue
 				}
 
 				listOut = append(listOut, &v1.UserInfoReply_ListOut{
 					Amount:    vUserReward.AmountNew,
-					Level:     num,
+					Level:     numTmp,
 					Status:    2,
-					AmountGet: vUserReward.AmountNew * num,
+					AmountGet: vUserReward.AmountNew * numTmp,
 					CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
 				})
 			} else {
@@ -929,12 +963,15 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 	tmpAreaMin := float64(0)
 	tmpMaxId := int64(0)
 	recommendTotal := float64(0)
+	recommendTotalGet := float64(0)
 	for _, vMyLowUser := range myLowUser[myUser.ID] {
 		if _, ok := usersMap[vMyLowUser.UserId]; !ok {
 			continue
 		}
 
 		recommendTotal += usersMap[vMyLowUser.UserId].AmountUsdt
+		recommendTotalGet += usersMap[vMyLowUser.UserId].AmountRecommendUsdtGet
+
 		if tmpAreaMax < usersMap[vMyLowUser.UserId].MyTotalAmount+usersMap[vMyLowUser.UserId].AmountUsdt {
 			tmpAreaMax = usersMap[vMyLowUser.UserId].MyTotalAmount + usersMap[vMyLowUser.UserId].AmountUsdt
 			tmpMaxId = vMyLowUser.UserId
@@ -947,6 +984,11 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 				tmpAreaMin += usersMap[vMyLowUser.UserId].MyTotalAmount + usersMap[vMyLowUser.UserId].AmountUsdt
 			}
 		}
+	}
+
+	recommendTotalGetSub := float64(0)
+	if recommendTotal > recommendTotalGet {
+		recommendTotalGetSub = recommendTotal - recommendTotalGet
 	}
 
 	currentLevel := uint64(0)
@@ -968,32 +1010,11 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 		currentLevel = 8
 	}
 
-	num := float64(1)
-	todayTotal := float64(0)
-	if 1 == myUser.Last {
-		num = 1.5
-		todayTotal = myUser.AmountUsdt * level1
-	} else if 2 == myUser.Last {
-		num = 1.8
-		todayTotal = myUser.AmountUsdt * level2
-	} else if 3 == myUser.Last {
-		num = 2
-		todayTotal = myUser.AmountUsdt * level3
-	} else if 4 == myUser.Last {
-		num = 2.3
-		todayTotal = myUser.AmountUsdt * level4
-	} else if 5 == myUser.Last {
-		num = 2.6
-		todayTotal = myUser.AmountUsdt * level5
-	} else if 6 == myUser.Last {
-		num = 3
-		todayTotal = myUser.AmountUsdt * level6
-	}
-
 	return &v1.UserInfoReply{
 		AreaMin:           tmpAreaMin,
 		AreaMax:           tmpAreaMax,
-		RecommendTotal:    recommendTotal,
+		AreaTotal:         tmpAreaMin + tmpAreaMax,
+		RecommendTotal:    recommendTotalGetSub,
 		WithdrawMin:       withdrawMin,
 		WithdrawMax:       withdrawMax,
 		One:               0,

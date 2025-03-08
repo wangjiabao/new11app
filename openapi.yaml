@@ -1065,6 +1065,9 @@ components:
                 balanceKsdt:
                     type: number
                     format: double
+                areaTotal:
+                    type: number
+                    format: double
                 listOut:
                     type: array
                     items:
