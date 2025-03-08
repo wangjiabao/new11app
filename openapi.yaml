@@ -1013,9 +1013,6 @@ components:
                 balanceUsdt:
                     type: number
                     format: double
-                balanceKsdt:
-                    type: number
-                    format: double
                 withdrawMax:
                     type: number
                     format: double
@@ -1056,6 +1053,18 @@ components:
                 rewardFive:
                     type: number
                     format: double
+                areaMax:
+                    type: number
+                    format: double
+                areaMin:
+                    type: number
+                    format: double
+                recommendTotal:
+                    type: number
+                    format: double
+                balanceKsdt:
+                    type: number
+                    format: double
                 listOut:
                     type: array
                     items:
@@ -1083,6 +1092,8 @@ components:
                 level:
                     type: number
                     format: double
+                status:
+                    type: string
                 amountGet:
                     type: number
                     format: double

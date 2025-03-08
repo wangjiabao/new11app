@@ -854,6 +854,7 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 				listOut = append(listOut, &v1.UserInfoReply_ListOut{
 					Amount:    vUserReward.AmountNew,
 					Level:     num,
+					Status:    2,
 					AmountGet: vUserReward.AmountNew * num,
 					CreatedAt: vUserReward.CreatedAt.Add(8 * time.Hour).Format("2006-01-02 15:04:05"),
 				})
@@ -873,6 +874,10 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 
 	listStake := make([]*v1.UserInfoReply_ListStake, 0)
 	for _, v := range stakes {
+		if 2 <= v.Status {
+			continue
+		}
+
 		listStake = append(listStake, &v1.UserInfoReply_ListStake{
 			Id:        uint64(v.ID),
 			Amount:    v.Amount,
@@ -923,11 +928,13 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 	tmpAreaMax := float64(0)
 	tmpAreaMin := float64(0)
 	tmpMaxId := int64(0)
+	recommendTotal := float64(0)
 	for _, vMyLowUser := range myLowUser[myUser.ID] {
 		if _, ok := usersMap[vMyLowUser.UserId]; !ok {
 			continue
 		}
 
+		recommendTotal += usersMap[vMyLowUser.UserId].AmountUsdt
 		if tmpAreaMax < usersMap[vMyLowUser.UserId].MyTotalAmount+usersMap[vMyLowUser.UserId].AmountUsdt {
 			tmpAreaMax = usersMap[vMyLowUser.UserId].MyTotalAmount + usersMap[vMyLowUser.UserId].AmountUsdt
 			tmpMaxId = vMyLowUser.UserId
@@ -984,6 +991,9 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 	}
 
 	return &v1.UserInfoReply{
+		AreaMin:           tmpAreaMin,
+		AreaMax:           tmpAreaMax,
+		RecommendTotal:    recommendTotal,
 		WithdrawMin:       withdrawMin,
 		WithdrawMax:       withdrawMax,
 		One:               0,
