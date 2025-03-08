@@ -943,19 +943,19 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 	}
 
 	currentLevel := uint64(0)
-	if 1000 <= tmpAreaMin {
+	if 1000 <= tmpAreaMin && 5000 > tmpAreaMin {
 		currentLevel = 1
-	} else if 5000 <= tmpAreaMin {
+	} else if 5000 <= tmpAreaMin && 30000 > tmpAreaMin {
 		currentLevel = 2
-	} else if 30000 <= tmpAreaMin {
+	} else if 30000 <= tmpAreaMin && 100000 > tmpAreaMin {
 		currentLevel = 3
-	} else if 100000 <= tmpAreaMin {
+	} else if 100000 <= tmpAreaMin && 300000 > tmpAreaMin {
 		currentLevel = 4
-	} else if 300000 <= tmpAreaMin {
+	} else if 300000 <= tmpAreaMin && 1000000 > tmpAreaMin {
 		currentLevel = 5
-	} else if 1000000 <= tmpAreaMin {
+	} else if 1000000 <= tmpAreaMin && 3000000 > tmpAreaMin {
 		currentLevel = 6
-	} else if 3000000 <= tmpAreaMin {
+	} else if 3000000 <= tmpAreaMin && 10000000 > tmpAreaMin {
 		currentLevel = 7
 	} else if 10000000 <= tmpAreaMin {
 		currentLevel = 8
@@ -2123,16 +2123,16 @@ func (uuc *UserUseCase) EthUserRecordHandle(ctx context.Context, amount uint64, 
 			}
 
 			tmpLastLevelNum := float64(0)
-			if 100000 <= tmpAreaMin {
+			if 100000 <= tmpAreaMin && 300000 < tmpAreaMin {
 				currentLevel = 4
 				tmpLastLevelNum = va4
-			} else if 300000 <= tmpAreaMin {
+			} else if 300000 <= tmpAreaMin && 1000000 < tmpAreaMin {
 				currentLevel = 5
 				tmpLastLevelNum = va5
-			} else if 1000000 <= tmpAreaMin {
+			} else if 1000000 <= tmpAreaMin && 3000000 < tmpAreaMin {
 				currentLevel = 6
 				tmpLastLevelNum = va6
-			} else if 3000000 <= tmpAreaMin {
+			} else if 3000000 <= tmpAreaMin && 10000000 < tmpAreaMin {
 				currentLevel = 7
 				tmpLastLevelNum = va7
 			} else if 10000000 <= tmpAreaMin {
