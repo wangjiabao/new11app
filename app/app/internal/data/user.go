@@ -2038,7 +2038,7 @@ func (ub *UserBalanceRepo) Exchange(ctx context.Context, userId int64, amountUsd
 	}
 
 	res := ub.data.DB(ctx).Table("total").Where("id=?", 1).
-		Updates(map[string]interface{}{"two": gorm.Expr("two + ?", fee)})
+		Updates(map[string]interface{}{"two": gorm.Expr("two + ?", fee), "three": gorm.Expr("three + ?", amountRawSub+fee)})
 	if res.Error != nil {
 		return errors.New(500, "UPDATE_USER_ERROR", "one信息修改失败")
 	}
