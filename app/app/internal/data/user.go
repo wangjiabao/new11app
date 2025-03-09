@@ -29,6 +29,7 @@ type User struct {
 	Out                    int64     `gorm:"type:int;not null"`
 	OutRate                int64     `gorm:"type:int;not null"`
 	Lock                   int64     `gorm:"type:int;not null"`
+	Vip                    int64     `gorm:"type:int;not null"`
 	RecommendLevel         int64     `gorm:"type:int;not null"`
 	AmountUsdt             float64   `gorm:"type:decimal(65,20);not null"`
 	MyTotalAmount          float64   `gorm:"type:decimal(65,20);not null"`
@@ -291,6 +292,7 @@ func (u *UserRepo) GetUserByAddress(ctx context.Context, address string) (*biz.U
 		IsDelete:   user.IsDelete,
 		AmountUsdt: user.AmountUsdt,
 		OutRate:    uint64(user.OutRate),
+		Lock:       user.Lock,
 	}, nil
 }
 
@@ -678,6 +680,7 @@ func (u *UserRepo) GetUserById(ctx context.Context, Id int64) (*biz.User, error)
 		AmountRecommendUsdtGet: user.AmountRecommendUsdtGet,
 		UpdatedAt:              user.UpdatedAt,
 		Last:                   user.Last,
+		Vip:                    user.Vip,
 	}, nil
 }
 
@@ -839,6 +842,7 @@ func (u *UserRepo) GetAllUsers(ctx context.Context) ([]*biz.User, error) {
 			AmountRecommendUsdtGet: item.AmountRecommendUsdtGet,
 			RecommendLevel:         item.RecommendLevel,
 			Last:                   item.Last,
+			Vip:                    item.Vip,
 		})
 	}
 	return res, nil
