@@ -993,22 +993,26 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 	}
 
 	currentLevel := uint64(0)
-	if 1 == myUser.Vip || (1000 <= tmpAreaMin && 5000 > tmpAreaMin) {
+	if 1000 <= tmpAreaMin && 5000 > tmpAreaMin {
 		currentLevel = 1
-	} else if 2 == myUser.Vip || (5000 <= tmpAreaMin && 30000 > tmpAreaMin) {
+	} else if 5000 <= tmpAreaMin && 30000 > tmpAreaMin {
 		currentLevel = 2
-	} else if 3 == myUser.Vip || (30000 <= tmpAreaMin && 100000 > tmpAreaMin) {
+	} else if 30000 <= tmpAreaMin && 100000 > tmpAreaMin {
 		currentLevel = 3
-	} else if 4 == myUser.Vip || (100000 <= tmpAreaMin && 300000 > tmpAreaMin) {
+	} else if 100000 <= tmpAreaMin && 300000 > tmpAreaMin {
 		currentLevel = 4
-	} else if 5 == myUser.Vip || (300000 <= tmpAreaMin && 1000000 > tmpAreaMin) {
+	} else if 300000 <= tmpAreaMin && 1000000 > tmpAreaMin {
 		currentLevel = 5
-	} else if 6 == myUser.Vip || (1000000 <= tmpAreaMin && 3000000 > tmpAreaMin) {
+	} else if 1000000 <= tmpAreaMin && 3000000 > tmpAreaMin {
 		currentLevel = 6
-	} else if 7 == myUser.Vip || (3000000 <= tmpAreaMin && 10000000 > tmpAreaMin) {
+	} else if 3000000 <= tmpAreaMin && 10000000 > tmpAreaMin {
 		currentLevel = 7
-	} else if 8 == myUser.Vip || 10000000 <= tmpAreaMin {
+	} else if 10000000 <= tmpAreaMin {
 		currentLevel = 8
+	}
+
+	if 0 < myUser.Vip {
+		currentLevel = uint64(myUser.Vip)
 	}
 
 	return &v1.UserInfoReply{
@@ -2155,24 +2159,50 @@ func (uuc *UserUseCase) EthUserRecordHandle(ctx context.Context, amount uint64, 
 			}
 
 			tmpLastLevelNum := float64(0)
-			if 4 == usersMap[tmpUserId].Vip || (100000 <= tmpAreaMin && 300000 > tmpAreaMin) {
-				currentLevel = 4
-				tmpLastLevelNum = va4
-			} else if 5 == usersMap[tmpUserId].Vip || (300000 <= tmpAreaMin && 1000000 > tmpAreaMin) {
-				currentLevel = 5
-				tmpLastLevelNum = va5
-			} else if 6 == usersMap[tmpUserId].Vip || (1000000 <= tmpAreaMin && 3000000 > tmpAreaMin) {
-				currentLevel = 6
-				tmpLastLevelNum = va6
-			} else if 7 == usersMap[tmpUserId].Vip || (3000000 <= tmpAreaMin && 10000000 > tmpAreaMin) {
-				currentLevel = 7
-				tmpLastLevelNum = va7
-			} else if 8 == usersMap[tmpUserId].Vip || 10000000 <= tmpAreaMin {
-				currentLevel = 8
-				tmpLastLevelNum = va8
+			if 0 < usersMap[tmpUserId].Vip {
+				if 4 <= usersMap[tmpUserId].Vip {
+					if 4 == usersMap[tmpUserId].Vip {
+						currentLevel = 4
+						tmpLastLevelNum = va4
+					} else if 5 == usersMap[tmpUserId].Vip {
+						currentLevel = 5
+						tmpLastLevelNum = va5
+					} else if 6 == usersMap[tmpUserId].Vip {
+						currentLevel = 6
+						tmpLastLevelNum = va6
+					} else if 7 == usersMap[tmpUserId].Vip {
+						currentLevel = 7
+						tmpLastLevelNum = va7
+					} else if 8 == usersMap[tmpUserId].Vip {
+						currentLevel = 8
+						tmpLastLevelNum = va8
+					} else {
+						// 跳过，没级别
+						continue
+					}
+				} else {
+					continue
+				}
 			} else {
-				// 跳过，没级别
-				continue
+				if 100000 <= tmpAreaMin && 300000 > tmpAreaMin {
+					currentLevel = 4
+					tmpLastLevelNum = va4
+				} else if 300000 <= tmpAreaMin && 1000000 > tmpAreaMin {
+					currentLevel = 5
+					tmpLastLevelNum = va5
+				} else if 1000000 <= tmpAreaMin && 3000000 > tmpAreaMin {
+					currentLevel = 6
+					tmpLastLevelNum = va6
+				} else if 3000000 <= tmpAreaMin && 10000000 > tmpAreaMin {
+					currentLevel = 7
+					tmpLastLevelNum = va7
+				} else if 10000000 <= tmpAreaMin {
+					currentLevel = 8
+					tmpLastLevelNum = va8
+				} else {
+					// 跳过，没级别
+					continue
+				}
 			}
 
 			// 级别低跳过
