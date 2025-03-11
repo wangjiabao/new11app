@@ -135,6 +135,13 @@ func (a *AppService) EthAuthorize(ctx context.Context, req *v1.EthAuthorizeReque
 		}, nil
 	}
 
+	if 1 == user.Lock {
+		return &v1.EthAuthorizeReply{
+			Token:  "",
+			Status: "用户已锁定",
+		}, nil
+	}
+
 	claims := auth.CustomClaims{
 		UserId:   user.ID,
 		UserType: "user",
@@ -389,6 +396,12 @@ func (a *AppService) Exchange(ctx context.Context, req *v1.ExchangeRequest) (*v1
 		}, nil
 	}
 
+	if 1 == user.Lock {
+		return &v1.ExchangeReply{
+			Status: "用户已锁定",
+		}, nil
+	}
+
 	//var (
 	//	address string
 	//	res     bool
@@ -466,6 +479,12 @@ func (a *AppService) Buy(ctx context.Context, req *v1.BuyRequest) (*v1.BuyReply,
 		}, nil
 	}
 
+	if 1 == user.Lock {
+		return &v1.BuyReply{
+			Status: "用户已锁定",
+		}, nil
+	}
+
 	//fmt.Println(user)
 	//res, address, err = verifySig2(req.SendBody.Sign, req.SendBody.PublicKey, "login")
 	//if !res || nil != err || 0 >= len(address) || address != user.Address {
@@ -537,6 +556,12 @@ func (a *AppService) AmountTo(ctx context.Context, req *v1.AmountToRequest) (*v1
 	if 1 == user.IsDelete {
 		return &v1.AmountToReply{
 			Status: "用户已删除",
+		}, nil
+	}
+
+	if 1 == user.Lock {
+		return &v1.AmountToReply{
+			Status: "用户已锁定",
 		}, nil
 	}
 
@@ -614,6 +639,12 @@ func (a *AppService) Stake(ctx context.Context, req *v1.StakeRequest) (*v1.Stake
 		}, nil
 	}
 
+	if 1 == user.Lock {
+		return &v1.StakeReply{
+			Status: "用户已锁定",
+		}, nil
+	}
+
 	//fmt.Println(user)
 	//res, address, err = verifySig2(req.SendBody.Sign, req.SendBody.PublicKey, "login")
 	//if !res || nil != err || 0 >= len(address) || address != user.Address {
@@ -688,6 +719,12 @@ func (a *AppService) UnStake(ctx context.Context, req *v1.UnStakeRequest) (*v1.U
 		}, nil
 	}
 
+	if 1 == user.Lock {
+		return &v1.UnStakeReply{
+			Status: "用户已锁定",
+		}, nil
+	}
+
 	//fmt.Println(user)
 	//res, address, err = verifySig2(req.SendBody.Sign, req.SendBody.PublicKey, "login")
 	//if !res || nil != err || 0 >= len(address) || address != user.Address {
@@ -755,6 +792,12 @@ func (a *AppService) Withdraw(ctx context.Context, req *v1.WithdrawRequest) (*v1
 	if 1 == user.IsDelete {
 		return &v1.WithdrawReply{
 			Status: "用户已删除",
+		}, nil
+	}
+
+	if 1 == user.Lock {
+		return &v1.WithdrawReply{
+			Status: "用户已锁定",
 		}, nil
 	}
 

@@ -29,6 +29,7 @@ type User struct {
 	Out                    int64     `gorm:"type:int;not null"`
 	OutRate                int64     `gorm:"type:int;not null"`
 	Lock                   int64     `gorm:"type:int;not null"`
+	Vip                    int64     `gorm:"type:int;not null"`
 	RecommendLevel         int64     `gorm:"type:int;not null"`
 	AmountUsdt             float64   `gorm:"type:decimal(65,20);not null"`
 	MyTotalAmount          float64   `gorm:"type:decimal(65,20);not null"`
@@ -291,6 +292,7 @@ func (u *UserRepo) GetUserByAddress(ctx context.Context, address string) (*biz.U
 		IsDelete:   user.IsDelete,
 		AmountUsdt: user.AmountUsdt,
 		OutRate:    uint64(user.OutRate),
+		Lock:       user.Lock,
 	}, nil
 }
 
@@ -495,7 +497,7 @@ func (u *UserRepo) UpdateUserRewardAreaTwo(ctx context.Context, userId int64, am
 func (u *UserRepo) UpdateUserNewTwoNew(ctx context.Context, userId int64, amountUsdt float64, last uint64, amountRawFloat float64, coinType string) error {
 	if "RAW" == coinType {
 		res := u.data.DB(ctx).Table("user").Where("id=?", userId).
-			Updates(map[string]interface{}{"amount_usdt": gorm.Expr("amount_usdt + ?", amountUsdt), "last": last})
+			Updates(map[string]interface{}{"amount_usdt": gorm.Expr("amount_usdt + ?", amountUsdt), "last": last, "updated_at": time.Now().Format("2006-01-02 15:04:05")})
 		if res.Error != nil {
 			return errors.New(500, "UPDATE_USER_ERROR", "用户信息修改失败")
 		}
@@ -508,7 +510,7 @@ func (u *UserRepo) UpdateUserNewTwoNew(ctx context.Context, userId int64, amount
 
 	} else if "KSDT" == coinType {
 		res := u.data.DB(ctx).Table("user").Where("id=?", userId).
-			Updates(map[string]interface{}{"amount_usdt": gorm.Expr("amount_usdt + ?", amountUsdt), "last": last})
+			Updates(map[string]interface{}{"amount_usdt": gorm.Expr("amount_usdt + ?", amountUsdt), "last": last, "updated_at": time.Now().Format("2006-01-02 15:04:05")})
 		if res.Error != nil {
 			return errors.New(500, "UPDATE_USER_ERROR", "用户信息修改失败")
 		}
@@ -676,7 +678,9 @@ func (u *UserRepo) GetUserById(ctx context.Context, Id int64) (*biz.User, error)
 		MyTotalAmount:          user.MyTotalAmount,
 		AmountUsdtGet:          user.AmountUsdtGet,
 		AmountRecommendUsdtGet: user.AmountRecommendUsdtGet,
+		UpdatedAt:              user.UpdatedAt,
 		Last:                   user.Last,
+		Vip:                    user.Vip,
 	}, nil
 }
 
@@ -838,6 +842,7 @@ func (u *UserRepo) GetAllUsers(ctx context.Context) ([]*biz.User, error) {
 			AmountRecommendUsdtGet: item.AmountRecommendUsdtGet,
 			RecommendLevel:         item.RecommendLevel,
 			Last:                   item.Last,
+			Vip:                    item.Vip,
 		})
 	}
 	return res, nil
@@ -2129,7 +2134,7 @@ func (ub *UserBalanceRepo) Exchange(ctx context.Context, userId int64, amountUsd
 	}
 
 	res := ub.data.DB(ctx).Table("total").Where("id=?", 1).
-		Updates(map[string]interface{}{"two": gorm.Expr("two + ?", fee)})
+		Updates(map[string]interface{}{"two": gorm.Expr("two + ?", fee), "three": gorm.Expr("three + ?", amountRawSub+fee)})
 	if res.Error != nil {
 		return errors.New(500, "UPDATE_USER_ERROR", "one信息修改失败")
 	}
@@ -3253,7 +3258,7 @@ func (ub *UserBalanceRepo) GetUserRewardDeposit(ctx context.Context, userId int6
 func (ub *UserBalanceRepo) GetUserRewardByUserId(ctx context.Context, userId int64) ([]*biz.Reward, error) {
 	var rewards []*Reward
 	res := make([]*biz.Reward, 0)
-	if err := ub.data.db.Where("user_id", userId).Table("reward").Limit(5000).Order("id desc").Find(&rewards).Error; err != nil {
+	if err := ub.data.db.Where("user_id", userId).Table("reward").Limit(10000).Order("id desc").Find(&rewards).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return res, errors.NotFound("REWARD_NOT_FOUND", "reward not found")
 		}

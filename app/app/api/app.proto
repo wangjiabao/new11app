@@ -382,7 +382,6 @@ message UserInfoReply {
 	double exchangeRate = 6; // 兑换手续费
 	double balanceRaw = 2; // raw余额
 	double balanceUsdt = 3; // rsdt余额
-	double balanceKsdt = 30; // rsdt余额
 	double withdrawMax = 52; // 最大提现金额
 	double withdrawMin = 53; // 最小提现金额
 
@@ -407,10 +406,16 @@ message UserInfoReply {
 	double rewardFour = 44; // 平级奖金
 	double rewardFive = 45; // 社区奖金
 
+	double areaMax = 46; // 大区业绩
+	double areaMin = 47; // 小区业绩
+	double recommendTotal = 48; // 直推业绩
+	double balanceKsdt = 30; // rsdt余额
+	double areaTotal  = 50; // 总业绩
 	repeated ListOut listOut = 135; // 收益记录
 	message ListOut {
 		double amount = 1; // rsdt金额
 		double level = 4; // 倍数
+		uint64 status = 2;  // 状态 1进行中，2出局
 		double amountGet = 5; // 已产出
 		string createdAt = 3; // 时间
 	}
