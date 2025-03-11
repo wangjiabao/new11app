@@ -2020,6 +2020,102 @@ func (ub *UserBalanceRepo) WithdrawUsdt2(ctx context.Context, userId int64, amou
 	return nil
 }
 
+// GetRewardBuyYes .
+func (ub *UserBalanceRepo) GetRewardBuyYes(ctx context.Context) ([]*biz.Reward, error) {
+	var rewards []*Reward
+
+	now := time.Now().UTC()
+	var startDate time.Time
+	var endDate time.Time
+	if 16 <= now.Hour() {
+		startDate = now
+		endDate = now.AddDate(0, 0, 1)
+	} else {
+		startDate = now.AddDate(0, 0, -1)
+		endDate = now
+	}
+	todayStart := time.Date(startDate.Year(), startDate.Month(), startDate.Day(), 16, 0, 0, 0, time.UTC)
+	todayEnd := time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 16, 0, 0, 0, time.UTC)
+
+	res := make([]*biz.Reward, 0)
+	if err := ub.data.db.
+		Where("created_at>=?", todayStart).
+		Where("created_at<?", todayEnd).
+		Where("reason=?", "buy").
+		Table("reward").Find(&rewards).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return res, nil
+		}
+
+		return nil, errors.New(500, "REWARD ERROR", err.Error())
+	}
+
+	for _, reward := range rewards {
+		res = append(res, &biz.Reward{
+			ID:               reward.ID,
+			UserId:           reward.UserId,
+			Amount:           reward.Amount,
+			BalanceRecordId:  reward.BalanceRecordId,
+			Type:             reward.Type,
+			TypeRecordId:     reward.TypeRecordId,
+			Reason:           reward.Reason,
+			ReasonLocationId: reward.ReasonLocationId,
+			LocationType:     reward.LocationType,
+			AmountNew:        reward.AmountNew,
+		})
+	}
+
+	return res, nil
+}
+
+// GetSystemYesterdayLocationReward .
+func (ub *UserBalanceRepo) GetSystemYesterdayLocationReward(ctx context.Context) ([]*biz.UserBalanceRecord, error) {
+	var rewards []*UserBalanceRecord
+
+	now := time.Now().UTC()
+	var startDate time.Time
+	var endDate time.Time
+	if 16 <= now.Hour() {
+		startDate = now
+		endDate = now.AddDate(0, 0, 1)
+	} else {
+		startDate = now.AddDate(0, 0, -1)
+		endDate = now
+	}
+	todayStart := time.Date(startDate.Year(), startDate.Month(), startDate.Day(), 16, 0, 0, 0, time.UTC)
+	todayEnd := time.Date(endDate.Year(), endDate.Month(), endDate.Day(), 16, 0, 0, 0, time.UTC)
+
+	if err := ub.data.db.
+		Where("created_at>=?", todayStart).
+		Where("created_at<?", todayEnd).
+		Where("type=?", "exchange").
+		Table("user_balance_record").Find(&rewards).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.NotFound("REWARD_NOT_FOUND", "reward not found")
+		}
+
+		return nil, errors.New(500, "REWARD ERROR", err.Error())
+	}
+
+	res := make([]*biz.UserBalanceRecord, 0)
+	for _, reward := range rewards {
+		res = append(res, &biz.UserBalanceRecord{
+			ID:           reward.ID,
+			UserId:       reward.UserId,
+			Balance:      reward.Balance,
+			Amount:       reward.Amount,
+			Type:         reward.Type,
+			CoinType:     reward.CoinType,
+			CreatedAt:    reward.CreatedAt,
+			UpdatedAt:    reward.UpdatedAt,
+			AmountNew:    reward.AmountNew,
+			AmountNewTwo: reward.AmountNewTwo,
+		})
+	}
+
+	return res, nil
+}
+
 // Exchange .
 func (ub *UserBalanceRepo) Exchange(ctx context.Context, userId int64, amountUsdt, fee, amountRawSub float64) error {
 	var (

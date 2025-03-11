@@ -185,13 +185,16 @@ type LocationNew struct {
 }
 
 type UserBalanceRecord struct {
-	ID        int64
-	UserId    int64
-	Amount    int64
-	CoinType  string
-	Balance   int64
-	Type      string
-	CreatedAt time.Time
+	ID           int64
+	UserId       int64
+	Amount       int64
+	CoinType     string
+	Balance      int64
+	Type         string
+	AmountNew    float64
+	AmountNewTwo float64
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }
 
 type BalanceReward struct {
@@ -269,6 +272,8 @@ type UserBalanceRepo interface {
 	StakeAmount(ctx context.Context, userId int64, amount float64, day int64) error
 	UnStakeAmount(ctx context.Context, userId int64, stakeId int64, amount float64) error
 	Exchange(ctx context.Context, userId int64, amountUsdt, fee, amountRawSub float64) error
+	GetSystemYesterdayLocationReward(ctx context.Context) ([]*UserBalanceRecord, error)
+	GetRewardBuyYes(ctx context.Context) ([]*Reward, error)
 	Exchange2(ctx context.Context, userId int64, amount int64, amountUsdtSubFee int64, amountUsdt int64, locationId int64) error
 	WithdrawUsdt3(ctx context.Context, userId int64, amount int64) error
 	TranUsdt(ctx context.Context, userId int64, toUserId int64, amount int64, tmpRecommendUserIdsInt []int64, tmpRecommendUserIdsInt2 []int64) error
@@ -707,6 +712,32 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 		return nil, err
 	}
 
+	var (
+		userYesExchange []*UserBalanceRecord
+	)
+	userYesExchange, err = uuc.ubRepo.GetSystemYesterdayLocationReward(ctx)
+	if nil != err {
+		return nil, err
+	}
+
+	tmpExchangeTotal := float64(0)
+	for _, v := range userYesExchange {
+		tmpExchangeTotal += v.AmountNew + v.AmountNewTwo
+	}
+
+	var (
+		buyReward []*Reward
+	)
+	buyReward, err = uuc.ubRepo.GetRewardBuyYes(ctx)
+	if nil != err {
+		return nil, err
+	}
+
+	tmpBuy := float64(0)
+	for _, v := range buyReward {
+		tmpBuy += v.AmountNew
+	}
+
 	// 推荐
 	userRecommend, err = uuc.urRepo.GetUserRecommendByUserId(ctx, myUser.ID)
 	if nil == userRecommend {
@@ -988,6 +1019,7 @@ func (uuc *UserUseCase) UserInfo(ctx context.Context, user *User) (*v1.UserInfoR
 		WithdrawMax:       withdrawMax,
 		One:               0,
 		Two:               totalAi,
+		Pool:              0,
 		Three:             0,
 		TodayTotal:        todayTotal,
 		ListEthTotal:      listEth,

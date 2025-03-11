@@ -369,6 +369,7 @@ message UserInfoReply {
 	double one = 11; // 销毁总量
 	double two = 12; // Ai算力总量
 	double three = 13; // 持币生息总量
+	double pool = 14; // 算力分红池
 	double todayTotal = 18; //今日奖励ai
 	repeated ListEthRecordTotal listEthTotal = 116; // 充值轮播记录
 	message ListEthRecordTotal {
