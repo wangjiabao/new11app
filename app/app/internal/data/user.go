@@ -30,6 +30,7 @@ type User struct {
 	OutRate                int64     `gorm:"type:int;not null"`
 	Lock                   int64     `gorm:"type:int;not null"`
 	Vip                    int64     `gorm:"type:int;not null"`
+	LockReward             int64     `gorm:"type:int;not null"`
 	RecommendLevel         int64     `gorm:"type:int;not null"`
 	AmountUsdt             float64   `gorm:"type:decimal(65,20);not null"`
 	MyTotalAmount          float64   `gorm:"type:decimal(65,20);not null"`
@@ -843,6 +844,7 @@ func (u *UserRepo) GetAllUsers(ctx context.Context) ([]*biz.User, error) {
 			RecommendLevel:         item.RecommendLevel,
 			Last:                   item.Last,
 			Vip:                    item.Vip,
+			LockReward:             item.LockReward,
 		})
 	}
 	return res, nil

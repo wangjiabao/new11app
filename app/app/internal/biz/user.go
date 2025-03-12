@@ -33,6 +33,7 @@ type User struct {
 	RecommendLevel         int64
 	Out                    int64
 	Vip                    int64
+	LockReward             int64
 	CreatedAt              time.Time
 	UpdatedAt              time.Time
 	Lock                   int64
@@ -2136,6 +2137,11 @@ func (uuc *UserUseCase) EthUserRecordHandle(ctx context.Context, amount uint64, 
 				return nil
 			}); nil != err {
 				fmt.Println(err, "错误投资2", v)
+				continue
+			}
+
+			// 锁定分红的用户，没有社区奖励
+			if 1 == usersMap[v.UserId].LockReward {
 				continue
 			}
 
